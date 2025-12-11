@@ -3,7 +3,8 @@ import { ScriptData, GeneratorMode, NewsItem, SocialPostData } from "../types";
 
 // Helper to get client securely
 const getClient = (apiKey?: string) => {
-  const finalKey = apiKey || process.env.API_KEY;
+  // Priority: 1) Passed apiKey, 2) GEMINI_API_KEY env, 3) API_KEY env
+  const finalKey = apiKey || process.env.GEMINI_API_KEY || process.env.API_KEY;
   if (!finalKey) {
     throw new Error("API Key not found. Please enter your Gemini API Key in Settings.");
   }
@@ -18,28 +19,28 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
  */
 const withRetry = async <T>(operation: () => Promise<T>, retries = 3, initialDelay = 2000): Promise<T> => {
   let lastError: any;
-  
+
   for (let i = 0; i < retries; i++) {
     try {
       return await operation();
     } catch (error: any) {
       lastError = error;
-      
+
       // Check for common rate limit error codes/messages
-      const isRateLimit = 
-        error.status === 429 || 
+      const isRateLimit =
+        error.status === 429 ||
         error.code === 429 ||
-        error.message?.includes('429') || 
-        error.message?.includes('quota') || 
+        error.message?.includes('429') ||
+        error.message?.includes('quota') ||
         error.message?.includes('RESOURCE_EXHAUSTED');
-      
+
       if (isRateLimit && i < retries - 1) {
         const delay = initialDelay * Math.pow(2, i); // 2s, 4s, 8s
         console.warn(`⚠️ Rate limit hit (Attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`);
         await wait(delay);
         continue;
       }
-      
+
       // If it's not a rate limit error, or we ran out of retries, throw immediately
       throw error;
     }
@@ -50,7 +51,7 @@ const withRetry = async <T>(operation: () => Promise<T>, retries = 3, initialDel
 export const generateScript = async (topic: string, mode: GeneratorMode, apiKey?: string): Promise<ScriptData> => {
   return withRetry(async () => {
     const ai = getClient(apiKey);
-    
+
     const systemInstruction = `You are a viral content scriptwriter and SEO expert for TikTok, YouTube Shorts, and Reels. 
     
     Your goal is to:
@@ -119,9 +120,9 @@ export const generateScript = async (topic: string, mode: GeneratorMode, apiKey?
 export const fetchTrendingNews = async (apiKey?: string, region: 'global' | 'thailand' = 'global'): Promise<NewsItem[]> => {
   return withRetry(async () => {
     const ai = getClient(apiKey);
-    
+
     let prompt = "";
-    
+
     if (region === 'thailand') {
       prompt = `Generate 9 viral, trending news headlines specifically for THAILAND (ประเทศไทย) that would be popular on TikTok/Shorts RIGHT NOW.
       Focus on: Thai Celebrity Dramas, Lottery/Horoscopes (หวย/ดวง), Viral Social Media clips, Local Mysteries, or Hot Political/Social issues in Thailand.
@@ -143,16 +144,16 @@ export const fetchTrendingNews = async (apiKey?: string, region: 'global' | 'tha
         responseSchema: {
           type: Type.ARRAY,
           items: {
-              type: Type.OBJECT,
-              properties: {
-                  id: { type: Type.STRING },
-                  headline: { type: Type.STRING },
-                  summary: { type: Type.STRING },
-                  category: { type: Type.STRING },
-                  popularity: { type: Type.STRING, description: "e.g. '1.5M Searches'" },
-                  source: { type: Type.STRING, description: "Name of the news source" },
-                  date: { type: Type.STRING, description: "Relative time/date" }
-              }
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              headline: { type: Type.STRING },
+              summary: { type: Type.STRING },
+              category: { type: Type.STRING },
+              popularity: { type: Type.STRING, description: "e.g. '1.5M Searches'" },
+              source: { type: Type.STRING, description: "Name of the news source" },
+              date: { type: Type.STRING, description: "Relative time/date" }
+            }
           }
         }
       }
@@ -224,32 +225,32 @@ export const generateImageForScene = async (prompt: string, apiKey?: string, mod
   // Inner helper to handle specific model calls without retry wrapper yet, 
   // because we might want to switch models on failure.
   const ai = getClient(apiKey);
-  
+
   const extractImage = (response: any) => {
     for (const part of response.candidates?.[0]?.content?.parts || []) {
-       if (part.inlineData) {
-         return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
-       }
+      if (part.inlineData) {
+        return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
+      }
     }
     return null;
   };
-  
+
   const cleanPrompt = prompt + ", cinematic lighting, 8k resolution, highly detailed, photorealistic, vertical aspect ratio 9:16. NO text, NO typography, NO writing, clear visual only.";
 
   // If Flash is requested, use it with standard retry
   if (model === 'gemini-2.5-flash-image') {
     return withRetry(async () => {
-        try {
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash-image',
-                contents: { parts: [{ text: cleanPrompt }] }
-            });
-            const img = extractImage(response);
-            if (img) return img;
-            throw new Error("Flash image generation returned no data");
-        } catch (e) {
-            throw new Error(`Flash Image Generation Failed: ${(e as Error).message}`);
-        }
+      try {
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash-image',
+          contents: { parts: [{ text: cleanPrompt }] }
+        });
+        const img = extractImage(response);
+        if (img) return img;
+        throw new Error("Flash image generation returned no data");
+      } catch (e) {
+        throw new Error(`Flash Image Generation Failed: ${(e as Error).message}`);
+      }
     });
   }
 
@@ -261,7 +262,7 @@ export const generateImageForScene = async (prompt: string, apiKey?: string, mod
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-image-preview',
         contents: {
-          parts: [{ text: cleanPrompt }] 
+          parts: [{ text: cleanPrompt }]
         },
         config: {
           imageConfig: {
@@ -278,19 +279,19 @@ export const generateImageForScene = async (prompt: string, apiKey?: string, mod
 
   } catch (e) {
     console.warn("Gemini 3 Pro Image failed or exhausted quota, attempting fallback to Flash Image", e);
-    
+
     // Fallback to Flash with its own retry logic
     return withRetry(async () => {
-        const fallbackResponse = await ai.models.generateContent({
-          model: 'gemini-2.5-flash-image',
-          contents: {
-            parts: [{ text: cleanPrompt }] 
-          }
-        });
-        
-        const img = extractImage(fallbackResponse);
-        if (img) return img;
-        throw new Error("Flash image generation failed");
+      const fallbackResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: {
+          parts: [{ text: cleanPrompt }]
+        }
+      });
+
+      const img = extractImage(fallbackResponse);
+      if (img) return img;
+      throw new Error("Flash image generation failed");
     });
   }
 };

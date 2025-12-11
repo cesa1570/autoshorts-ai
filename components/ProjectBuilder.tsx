@@ -8,12 +8,12 @@ import VideoPlayer, { VideoPlayerRef } from './VideoPlayer';
 import { useToast } from './ToastContext';
 import { Wand2, FileText, Image as ImageIcon, Music, CheckCircle2, AlertCircle, RefreshCw, Youtube, Upload, Loader2, Download, Volume2, Copy, Search, Hash, Mic, Palette, Save, Edit3, X, RotateCcw, FolderOpen } from 'lucide-react';
 
-// Reliable Public Domain Tracks from Wikimedia Commons
+// Reliable Public Domain Tracks from Internet Archive
 const BGM_OPTIONS = [
-  { id: 'ambient', name: 'Ambient (Gymnopedie No. 1)', url: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/e/e6/Eric_Satie_-_Gymnop%C3%A9die_No._1.ogg/Eric_Satie_-_Gymnop%C3%A9die_No._1.ogg.mp3' },
-  { id: 'upbeat', name: 'Upbeat (Daily Beetle)', url: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a4/Kevin_MacLeod_-_Daily_Beetle.ogg/Kevin_MacLeod_-_Daily_Beetle.ogg.mp3' },
-  { id: 'cinematic', name: 'Cinematic (Impact Moderato)', url: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/2/2a/Kevin_MacLeod_-_Impact_Moderato.ogg/Kevin_MacLeod_-_Impact_Moderato.ogg.mp3' },
-  { id: 'dark', name: 'Dark (Aftermath)', url: 'https://upload.wikimedia.org/wikipedia/commons/transcoded/d/d1/Kevin_MacLeod_-_Aftermath.ogg/Kevin_MacLeod_-_Aftermath.ogg.mp3' },
+  { id: 'ambient', name: 'Ambient (Gymnopedie No. 1)', url: 'https://ia800504.us.archive.org/15/items/ErikSatieGymnopediesGnossiennes/06SatieGymnopdie1.mp3' },
+  { id: 'upbeat', name: 'Upbeat (Cheerful)', url: 'https://ia800905.us.archive.org/19/items/jamendo-097430/01.mp3' },
+  { id: 'cinematic', name: 'Cinematic (Epic)', url: 'https://ia802609.us.archive.org/26/items/jamendo-017233/01.mp3' },
+  { id: 'dark', name: 'Dark (Suspense)', url: 'https://ia800500.us.archive.org/30/items/jamendo-017979/01.mp3' },
   { id: 'none', name: 'No Background Music', url: '' },
 ];
 
@@ -501,9 +501,9 @@ const ProjectBuilder: React.FC<ProjectBuilderProps> = ({ initialTopic, apiKey, y
             {progressSteps.map((step, idx) => (
               <div key={idx} className="flex items-center gap-3">
                 <div className={`p-1 rounded-full ${step.status === 'done' ? 'bg-green-500 text-black' :
-                    step.status === 'active' ? 'bg-purple-500 text-white animate-pulse' :
-                      step.status === 'error' ? 'bg-red-500 text-white' :
-                        'bg-slate-700 text-slate-400'}`}>
+                  step.status === 'active' ? 'bg-purple-500 text-white animate-pulse' :
+                    step.status === 'error' ? 'bg-red-500 text-white' :
+                      'bg-slate-700 text-slate-400'}`}>
                   {step.status === 'done' ? <CheckCircle2 size={14} /> :
                     step.status === 'active' ? <Loader2 size={14} className="animate-spin" /> :
                       step.status === 'error' ? <AlertCircle size={14} /> :
