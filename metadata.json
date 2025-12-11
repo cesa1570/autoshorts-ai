@@ -1,0 +1,5 @@
+{
+  "name": "AutoShorts AI",
+  "description": "An automated AI video generator for Shorts, Reels, and TikTok using Gemini for script, voice, and visuals.",
+  "requestFramePermissions": []
+}
