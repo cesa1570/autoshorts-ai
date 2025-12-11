@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Video, Zap, Settings, Github, Menu, X, Newspaper, Key, Save, Share2, LogOut, Youtube, User, Link2, ListPlus, Calendar } from 'lucide-react';
+import { LayoutDashboard, Video, Zap, Settings, Github, Menu, X, Newspaper, Key, Save, Share2, LogOut, Youtube, User, Link2, ListPlus, Calendar, Sparkles } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ProjectBuilder from './components/ProjectBuilder';
 import TrendingNews from './components/TrendingNews';
 import SocialPostGenerator from './components/SocialPostGenerator';
 import BatchQueue from './components/BatchQueue';
 import ContentCalendar from './components/ContentCalendar';
+import AutoTopicGenerator from './components/AutoTopicGenerator';
 import { useToast } from './components/ToastContext';
 import { getAuthState, signIn, signOut, isOAuthConfigured, setGoogleClientId, AuthState } from './services/authService';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar'>('create');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar' | 'autotopic'>('create');
   const [menuOpen, setMenuOpen] = useState(false);
   const { addToast } = useToast();
 
@@ -83,7 +84,7 @@ const App: React.FC = () => {
     setMenuOpen(false);
   };
 
-  const NavItem = ({ id, label, icon: Icon }: { id: 'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar', label: string, icon: any }) => (
+  const NavItem = ({ id, label, icon: Icon }: { id: 'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar' | 'autotopic', label: string, icon: any }) => (
     <button
       onClick={() => { setActiveTab(id); setMenuOpen(false); }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors text-sm ${activeTab === id
@@ -114,6 +115,7 @@ const App: React.FC = () => {
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2">สร้าง Content</p>
           <NavItem id="create" label="Video Generator" icon={Video} />
           <NavItem id="batch" label="Batch Queue" icon={ListPlus} />
+          <NavItem id="autotopic" label="Auto Topics" icon={Sparkles} />
           <NavItem id="social" label="Social Post" icon={Share2} />
 
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2 mt-4">จัดการ</p>
@@ -203,6 +205,7 @@ const App: React.FC = () => {
             <nav className="flex-1 p-3 space-y-1">
               <NavItem id="create" label="Video Generator" icon={Video} />
               <NavItem id="batch" label="Batch Queue" icon={ListPlus} />
+              <NavItem id="autotopic" label="Auto Topics" icon={Sparkles} />
               <NavItem id="social" label="Social Post" icon={Share2} />
               <NavItem id="news" label="Trending News" icon={Newspaper} />
               <NavItem id="calendar" label="Content Calendar" icon={Calendar} />
@@ -225,6 +228,7 @@ const App: React.FC = () => {
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'create' && <ProjectBuilder initialTopic={selectedNewsTopic} apiKey={customApiKey} youtubeToken={authState.accessToken} />}
           {activeTab === 'batch' && <BatchQueue apiKey={customApiKey} />}
+          {activeTab === 'autotopic' && <AutoTopicGenerator apiKey={customApiKey} onSelectTopic={(topic) => { setSelectedNewsTopic(topic); setActiveTab('create'); }} />}
           {activeTab === 'news' && <TrendingNews onSelectTopic={handleNewsTopicSelect} apiKey={customApiKey} />}
           {activeTab === 'calendar' && <ContentCalendar />}
           {activeTab === 'social' && <SocialPostGenerator initialTopic={selectedNewsTopic} apiKey={customApiKey} />}

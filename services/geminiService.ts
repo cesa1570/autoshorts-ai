@@ -343,3 +343,149 @@ export const generateVoiceover = async (text: string, apiKey?: string, voiceName
     return base64Audio;
   });
 };
+
+// ==================== PASSIVE INCOME FEATURES ====================
+
+// Predict viral potential of a topic (0-100 score)
+export interface ViralPrediction {
+  score: number;
+  reasoning: string;
+  suggestions: string[];
+  bestTimeToPost: string;
+}
+
+export const predictViralScore = async (topic: string, apiKey?: string): Promise<ViralPrediction> => {
+  return withRetry(async () => {
+    const ai = getClient(apiKey);
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Analyze this topic for viral potential on YouTube Shorts/TikTok: "${topic}"
+
+      Consider:
+      - Current trend relevance
+      - Emotional engagement potential
+      - Shareability factor
+      - Target audience size
+      - Competition level
+
+      Return JSON with:
+      - score (0-100, where 100 = extremely likely to go viral)
+      - reasoning (brief explanation)
+      - suggestions (3 ways to make it more viral)
+      - bestTimeToPost (best time in Thailand timezone)`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            score: { type: Type.NUMBER },
+            reasoning: { type: Type.STRING },
+            suggestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+            bestTimeToPost: { type: Type.STRING }
+          }
+        }
+      }
+    });
+
+    if (!response.text) throw new Error("Failed to predict viral score");
+    return JSON.parse(response.text) as ViralPrediction;
+  });
+};
+
+// Generate auto topic suggestions based on current trends
+export const generateAutoTopics = async (niche: string, count: number = 10, apiKey?: string): Promise<{
+  topics: { title: string; viralScore: number; category: string }[];
+}> => {
+  return withRetry(async () => {
+    const ai = getClient(apiKey);
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Generate ${count} highly viral topic ideas for YouTube Shorts/TikTok in the "${niche}" niche.
+
+      Focus on:
+      - Topics trending RIGHT NOW in Thailand and globally
+      - High engagement potential
+      - Easy to create content
+      - Good for short-form video (30-60 seconds)
+
+      Each topic should have a predicted viral score (0-100).
+      Return in Thai language if niche is Thai-related, otherwise English.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            topics: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  viralScore: { type: Type.NUMBER },
+                  category: { type: Type.STRING }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!response.text) throw new Error("Failed to generate topics");
+    return JSON.parse(response.text);
+  });
+};
+
+// Translate script to another language
+export const translateScript = async (
+  script: ScriptData,
+  targetLanguage: string,
+  apiKey?: string
+): Promise<ScriptData> => {
+  return withRetry(async () => {
+    const ai = getClient(apiKey);
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: `Translate this video script to ${targetLanguage}. 
+      Maintain the same tone, viral appeal, and SEO optimization.
+      Adapt hashtags for the target language market.
+
+      Original Script:
+      ${JSON.stringify(script, null, 2)}
+
+      Return the translated script in the same JSON structure.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            seoTitle: { type: Type.STRING },
+            description: { type: Type.STRING },
+            longDescription: { type: Type.STRING },
+            hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
+            seoKeywords: { type: Type.STRING },
+            scenes: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.NUMBER },
+                  visual_prompt: { type: Type.STRING },
+                  voiceover: { type: Type.STRING },
+                  duration_est: { type: Type.NUMBER }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!response.text) throw new Error("Failed to translate script");
+    return JSON.parse(response.text) as ScriptData;
+  });
+};

@@ -114,6 +114,16 @@ const BatchQueue: React.FC<BatchQueueProps> = ({ apiKey }) => {
         setCurrentProcessing(null);
         setIsProcessing(false);
         addToast('info', 'ประมวลผลคิวเสร็จสิ้น');
+
+        // Send browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('🎉 Batch Queue เสร็จสิ้น!', {
+                body: `สร้างเสร็จ ${completedCount + pendingItems.length} วิดีโอ`,
+                icon: '/favicon.ico'
+            });
+        } else if ('Notification' in window && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
     };
 
     const getStatusIcon = (status: string) => {
@@ -178,8 +188,8 @@ const BatchQueue: React.FC<BatchQueueProps> = ({ apiKey }) => {
                         onClick={processQueue}
                         disabled={isProcessing || pendingCount === 0}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${isProcessing || pendingCount === 0
-                                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-500 text-white'
+                            ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                            : 'bg-green-600 hover:bg-green-500 text-white'
                             }`}
                     >
                         {isProcessing ? <Loader2 className="animate-spin" size={18} /> : <Play size={18} />}
@@ -229,8 +239,8 @@ const BatchQueue: React.FC<BatchQueueProps> = ({ apiKey }) => {
                                 <span className="text-slate-500 text-sm w-6">{idx + 1}</span>
                                 {getStatusIcon(item.status)}
                                 <span className={`flex-1 text-sm ${item.status === 'completed' ? 'text-slate-500 line-through' :
-                                        item.status === 'error' ? 'text-red-400' :
-                                            'text-white'
+                                    item.status === 'error' ? 'text-red-400' :
+                                        'text-white'
                                     }`}>
                                     {item.topic}
                                 </span>
