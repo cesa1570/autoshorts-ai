@@ -207,7 +207,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 lg:p-8 pt-24 mt-8 w-full max-w-7xl mx-auto">
+      <main className="flex-1 p-4 lg:p-8 pt-32 w-full max-w-7xl mx-auto">
         <header className="mb-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
