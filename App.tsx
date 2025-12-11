@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Video, Zap, Settings, Github, Menu, X, Newspaper, Key, Save, Share2, LogOut, Youtube, User, Link2 } from 'lucide-react';
+import { LayoutDashboard, Video, Zap, Settings, Github, Menu, X, Newspaper, Key, Save, Share2, LogOut, Youtube, User, Link2, ListPlus, Calendar } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ProjectBuilder from './components/ProjectBuilder';
 import TrendingNews from './components/TrendingNews';
 import SocialPostGenerator from './components/SocialPostGenerator';
+import BatchQueue from './components/BatchQueue';
+import ContentCalendar from './components/ContentCalendar';
 import { useToast } from './components/ToastContext';
 import { getAuthState, signIn, signOut, isOAuthConfigured, setGoogleClientId, AuthState } from './services/authService';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'news' | 'social'>('create');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar'>('create');
   const [menuOpen, setMenuOpen] = useState(false);
   const { addToast } = useToast();
 
@@ -81,7 +83,7 @@ const App: React.FC = () => {
     setMenuOpen(false);
   };
 
-  const NavItem = ({ id, label, icon: Icon }: { id: 'dashboard' | 'create' | 'news' | 'social', label: string, icon: any }) => (
+  const NavItem = ({ id, label, icon: Icon }: { id: 'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar', label: string, icon: any }) => (
     <button
       onClick={() => { setActiveTab(id); setMenuOpen(false); }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors text-sm ${activeTab === id
@@ -109,10 +111,14 @@ const App: React.FC = () => {
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2">Menu</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2">สร้าง Content</p>
           <NavItem id="create" label="Video Generator" icon={Video} />
+          <NavItem id="batch" label="Batch Queue" icon={ListPlus} />
           <NavItem id="social" label="Social Post" icon={Share2} />
+
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2 mt-4">จัดการ</p>
           <NavItem id="news" label="Trending News" icon={Newspaper} />
+          <NavItem id="calendar" label="Content Calendar" icon={Calendar} />
           <NavItem id="dashboard" label="Dashboard" icon={LayoutDashboard} />
 
           <div className="my-3 border-t border-slate-800"></div>
@@ -137,8 +143,8 @@ const App: React.FC = () => {
           <button
             onClick={authState.isAuthenticated ? handleYouTubeDisconnect : handleYouTubeConnect}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${authState.isAuthenticated
-                ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                : 'bg-red-600 text-white hover:bg-red-500'
+              ? 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+              : 'bg-red-600 text-white hover:bg-red-500'
               }`}
           >
             <Youtube size={16} />
@@ -216,7 +222,9 @@ const App: React.FC = () => {
         <div className="max-w-6xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
           {activeTab === 'dashboard' && <Dashboard />}
           {activeTab === 'create' && <ProjectBuilder initialTopic={selectedNewsTopic} apiKey={customApiKey} youtubeToken={authState.accessToken} />}
+          {activeTab === 'batch' && <BatchQueue apiKey={customApiKey} />}
           {activeTab === 'news' && <TrendingNews onSelectTopic={handleNewsTopicSelect} apiKey={customApiKey} />}
+          {activeTab === 'calendar' && <ContentCalendar />}
           {activeTab === 'social' && <SocialPostGenerator initialTopic={selectedNewsTopic} apiKey={customApiKey} />}
         </div>
       </main>

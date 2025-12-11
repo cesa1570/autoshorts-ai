@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, DollarSign, Video, Eye, FolderOpen, Plus, Trash2, Clock, CheckCircle, Upload, Loader2 } from 'lucide-react';
+import { TrendingUp, FolderOpen, Plus, Trash2, Clock, CheckCircle, Upload, Loader2, Calendar, Target, Flame, BarChart3 } from 'lucide-react';
 import { getProjectStats, getRecentProjects, deleteProject } from '../services/storageService';
-import { SavedProject, ProjectStats } from '../types';
+import { SavedProject } from '../types';
 
 interface DashboardProps {
    onLoadProject?: (project: SavedProject) => void;
@@ -9,7 +9,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onLoadProject, onCreateNew }) => {
-   const [stats, setStats] = useState<ProjectStats>({ totalProjects: 0, completedProjects: 0, uploadedProjects: 0 });
+   const [stats, setStats] = useState<any>({ totalProjects: 0, completedProjects: 0, uploadedProjects: 0, videosThisWeek: 0, videosThisMonth: 0, topTopics: [] });
    const [recentProjects, setRecentProjects] = useState<SavedProject[]>([]);
    const [loading, setLoading] = useState(true);
 
@@ -55,13 +55,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onLoadProject, onCreateNew }) => 
       }
    };
 
-   const statCards = [
-      { label: "Total Projects", value: stats.totalProjects.toString(), icon: <FolderOpen size={20} />, color: "text-blue-400", bg: "bg-blue-400/10" },
-      { label: "Completed", value: stats.completedProjects.toString(), icon: <CheckCircle size={20} />, color: "text-green-400", bg: "bg-green-400/10" },
-      { label: "Uploaded", value: stats.uploadedProjects.toString(), icon: <Upload size={20} />, color: "text-purple-400", bg: "bg-purple-400/10" },
-      { label: "Success Rate", value: stats.totalProjects > 0 ? `${Math.round((stats.completedProjects / stats.totalProjects) * 100)}%` : '0%', icon: <TrendingUp size={20} />, color: "text-orange-400", bg: "bg-orange-400/10" },
-   ];
-
    if (loading) {
       return (
          <div className="flex items-center justify-center h-64">
@@ -72,17 +65,98 @@ const Dashboard: React.FC<DashboardProps> = ({ onLoadProject, onCreateNew }) => 
 
    return (
       <div className="space-y-6">
-         {/* Stats Grid */}
+         {/* Main Stats Grid */}
          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {statCards.map((stat, idx) => (
-               <div key={idx} className="bg-slate-800 border border-slate-700 p-5 rounded-xl flex flex-col gap-2 hover:border-slate-600 transition">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.bg} ${stat.color} mb-2`}>
-                     {stat.icon}
-                  </div>
-                  <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+            <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-400/10 text-blue-400 mb-2">
+                  <FolderOpen size={20} />
                </div>
-            ))}
+               <p className="text-slate-400 text-sm font-medium">Total Videos</p>
+               <p className="text-2xl font-bold text-white">{stats.totalProjects}</p>
+            </div>
+            <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-green-400/10 text-green-400 mb-2">
+                  <Upload size={20} />
+               </div>
+               <p className="text-slate-400 text-sm font-medium">Uploaded</p>
+               <p className="text-2xl font-bold text-white">{stats.uploadedProjects}</p>
+            </div>
+            <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-purple-400/10 text-purple-400 mb-2">
+                  <Calendar size={20} />
+               </div>
+               <p className="text-slate-400 text-sm font-medium">This Week</p>
+               <p className="text-2xl font-bold text-white">{stats.videosThisWeek}</p>
+            </div>
+            <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl">
+               <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-orange-400/10 text-orange-400 mb-2">
+                  <BarChart3 size={20} />
+               </div>
+               <p className="text-slate-400 text-sm font-medium">This Month</p>
+               <p className="text-2xl font-bold text-white">{stats.videosThisMonth}</p>
+            </div>
+         </div>
+
+         {/* Productivity & Top Topics Row */}
+         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Productivity Goals */}
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Target className="text-purple-400" size={20} /> Productivity Goals
+               </h3>
+               <div className="space-y-4">
+                  <div>
+                     <div className="flex justify-between text-sm mb-1">
+                        <span className="text-slate-400">Weekly Goal (7 videos)</span>
+                        <span className="text-white font-medium">{stats.videosThisWeek}/7</span>
+                     </div>
+                     <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div
+                           className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all"
+                           style={{ width: `${Math.min((stats.videosThisWeek / 7) * 100, 100)}%` }}
+                        ></div>
+                     </div>
+                  </div>
+                  <div>
+                     <div className="flex justify-between text-sm mb-1">
+                        <span className="text-slate-400">Monthly Goal (30 videos)</span>
+                        <span className="text-white font-medium">{stats.videosThisMonth}/30</span>
+                     </div>
+                     <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div
+                           className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all"
+                           style={{ width: `${Math.min((stats.videosThisMonth / 30) * 100, 100)}%` }}
+                        ></div>
+                     </div>
+                  </div>
+                  <div className="pt-2 border-t border-slate-700">
+                     <p className="text-xs text-slate-500">
+                        {stats.videosThisWeek >= 7 ? '🎉 Weekly goal achieved!' : `${7 - stats.videosThisWeek} more videos to reach weekly goal`}
+                     </p>
+                  </div>
+               </div>
+            </div>
+
+            {/* Top Topics */}
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
+               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <Flame className="text-orange-400" size={20} /> Popular Topics
+               </h3>
+               {stats.topTopics?.length > 0 ? (
+                  <div className="space-y-2">
+                     {stats.topTopics.map((topic: string, idx: number) => (
+                        <div key={idx} className="flex items-center gap-3 p-2 bg-slate-700/50 rounded-lg">
+                           <span className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold">
+                              {idx + 1}
+                           </span>
+                           <span className="text-slate-300 text-sm truncate flex-1">{topic}</span>
+                        </div>
+                     ))}
+                  </div>
+               ) : (
+                  <p className="text-slate-500 text-sm">Create more videos to see your top topics!</p>
+               )}
+            </div>
          </div>
 
          {/* Recent Projects */}
@@ -157,12 +231,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onLoadProject, onCreateNew }) => 
 
          {/* Quick Tips */}
          <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-xl p-6">
-            <h3 className="text-lg font-bold text-white mb-3">💡 Quick Tips</h3>
+            <h3 className="text-lg font-bold text-white mb-3">💡 Passive Income Tips</h3>
             <ul className="space-y-2 text-sm text-slate-300">
-               <li>• Use <span className="text-purple-400">Trending News</span> to find viral topics</li>
-               <li>• Save projects to continue editing later</li>
-               <li>• Connect YouTube to upload directly from the app</li>
-               <li>• Generate multiple videos per topic for better reach</li>
+               <li>• สร้างวิดีโอ <span className="text-purple-400">7 ตัว/สัปดาห์</span> เพื่อเติบโตอย่างต่อเนื่อง</li>
+               <li>• ใช้ <span className="text-purple-400">Trending News</span> หาหัวข้อ viral</li>
+               <li>• อัพโหลดช่วง <span className="text-purple-400">18:00-21:00</span> เพื่อ engagement สูงสุด</li>
+               <li>• สร้าง Content หลายๆ niche เพื่อกระจายความเสี่ยง</li>
             </ul>
          </div>
       </div>
