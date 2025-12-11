@@ -8,12 +8,9 @@ import VideoPlayer, { VideoPlayerRef } from './VideoPlayer';
 import { useToast } from './ToastContext';
 import { Wand2, FileText, Image as ImageIcon, Music, CheckCircle2, AlertCircle, RefreshCw, Youtube, Upload, Loader2, Download, Volume2, Copy, Search, Hash, Mic, Palette, Save, Edit3, X, RotateCcw, FolderOpen } from 'lucide-react';
 
-// Reliable Public Domain Tracks from Internet Archive
+// BGM Options - External URLs removed due to CORS issues
+// Users can upload their own music files in future update
 const BGM_OPTIONS = [
-  { id: 'ambient', name: 'Ambient (Gymnopedie No. 1)', url: 'https://ia800504.us.archive.org/15/items/ErikSatieGymnopediesGnossiennes/06SatieGymnopdie1.mp3' },
-  { id: 'upbeat', name: 'Upbeat (Cheerful)', url: 'https://ia800905.us.archive.org/19/items/jamendo-097430/01.mp3' },
-  { id: 'cinematic', name: 'Cinematic (Epic)', url: 'https://ia802609.us.archive.org/26/items/jamendo-017233/01.mp3' },
-  { id: 'dark', name: 'Dark (Suspense)', url: 'https://ia800500.us.archive.org/30/items/jamendo-017979/01.mp3' },
   { id: 'none', name: 'No Background Music', url: '' },
 ];
 

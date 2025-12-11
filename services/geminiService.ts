@@ -3,8 +3,10 @@ import { ScriptData, GeneratorMode, NewsItem, SocialPostData } from "../types";
 
 // Helper to get client securely
 const getClient = (apiKey?: string) => {
-  // Priority: 1) Passed apiKey, 2) GEMINI_API_KEY env, 3) API_KEY env
-  const finalKey = apiKey || process.env.GEMINI_API_KEY || process.env.API_KEY;
+  // Priority: 1) Passed apiKey (from localStorage), 2) Build-time env variable
+  // @ts-ignore - Vite injects these at build time
+  const envKey = typeof import.meta !== 'undefined' ? (import.meta as any).env?.VITE_GEMINI_API_KEY : undefined;
+  const finalKey = apiKey || envKey;
   if (!finalKey) {
     throw new Error("API Key not found. Please enter your Gemini API Key in Settings.");
   }
