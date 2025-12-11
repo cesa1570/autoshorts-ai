@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ProjectState, GeneratorMode, ScriptData, Scene, SavedProject } from '../types';
 import { generateScript, generateImageForScene, generateVoiceover } from '../services/geminiService';
 import { uploadVideoToYouTube } from '../services/youtubeService';
-import { saveProject, markProjectUploaded } from '../services/storageService';
+import { saveProject, markProjectUploaded, listPresets, Preset } from '../services/storageService';
 import { decodeAudioData } from '../utils/audioUtils';
 import VideoPlayer, { VideoPlayerRef } from './VideoPlayer';
 import { useToast } from './ToastContext';
-import { Wand2, FileText, Image as ImageIcon, Music, CheckCircle2, AlertCircle, RefreshCw, Youtube, Upload, Loader2, Download, Volume2, Copy, Search, Hash, Mic, Palette, Save, Edit3, X, RotateCcw, FolderOpen } from 'lucide-react';
+import { Wand2, FileText, Image as ImageIcon, Music, CheckCircle2, AlertCircle, RefreshCw, Youtube, Upload, Loader2, Download, Volume2, Copy, Search, Hash, Mic, Palette, Save, Edit3, X, RotateCcw, FolderOpen, Sparkles, ClipboardCopy } from 'lucide-react';
 
 // BGM Options - External URLs removed due to CORS issues
 // Users can upload their own music files in future update
@@ -89,8 +89,95 @@ const ProjectBuilder: React.FC<ProjectBuilderProps> = ({ initialTopic, apiKey, y
   const [bgmVolume, setBgmVolume] = useState<number>(0.15);
   const [selectedVoice, setSelectedVoice] = useState<string>('Kore');
   const [selectedImageModel, setSelectedImageModel] = useState<string>('gemini-3-pro-image-preview');
+  const [customBgmFile, setCustomBgmFile] = useState<File | null>(null);
+  const [customBgmUrl, setCustomBgmUrl] = useState<string>('');
+
+  // Auto-save draft every 30 seconds
+  useEffect(() => {
+    if (!state.topic || state.status === 'generating_script' || state.status === 'generating_assets') return;
+
+    const autoSaveInterval = setInterval(() => {
+      if (state.topic) {
+        const name = projectName || `Draft - ${state.topic.slice(0, 30)}`;
+        saveProject(name, state.topic, mode, state.script, projectId || undefined);
+        console.log('Auto-saved draft');
+      }
+    }, 30000); // Every 30 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [state.topic, state.script, projectName, mode]);
+
+  // Export project to JSON
+  const exportToJson = () => {
+    if (!state.script) {
+      addToast('warning', 'No project to export');
+      return;
+    }
+
+    const exportData = {
+      name: projectName || state.topic,
+      topic: state.topic,
+      mode,
+      script: state.script,
+      settings: {
+        voice: selectedVoice,
+        imageModel: selectedImageModel,
+      },
+      exportedAt: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${projectName || 'project'}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast('success', 'Project exported!');
+  };
+
+  // Handle custom BGM file upload
+  const handleBgmUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCustomBgmFile(file);
+      const url = URL.createObjectURL(file);
+      setCustomBgmUrl(url);
+      setSelectedBgm(url);
+      addToast('success', `BGM loaded: ${file.name}`);
+    }
+  };
+
+  // Preset templates
+  const [presets] = useState<Preset[]>(listPresets());
 
   const playerRef = useRef<VideoPlayerRef>(null);
+
+  // Apply preset function
+  const applyPreset = (preset: Preset) => {
+    setMode(preset.mode);
+    setSelectedVoice(preset.voice);
+    setSelectedImageModel(preset.imageModel);
+    addToast('success', `ใช้ preset: ${preset.name}`);
+  };
+
+  // Copy all SEO data to clipboard
+  const copyAllToClipboard = () => {
+    if (!state.script) return;
+
+    const { seoTitle, longDescription, hashtags } = state.script;
+    const hashtagsStr = hashtags?.join(' ') || '';
+
+    const fullText = `${seoTitle}
+
+${longDescription}
+
+${hashtagsStr}`;
+
+    navigator.clipboard.writeText(fullText);
+    addToast('success', '📋 Copied all to clipboard!');
+  };
+
 
   const updateProgress = (stepName: string, status: 'pending' | 'active' | 'done' | 'error') => {
     setProgressSteps(prev => {
@@ -340,13 +427,38 @@ const ProjectBuilder: React.FC<ProjectBuilderProps> = ({ initialTopic, apiKey, y
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Wand2 className="text-purple-400" /> Content Generator
             </h2>
-            <button
-              onClick={handleSaveProject}
-              disabled={!state.topic}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Save size={14} /> Save
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={exportToJson}
+                disabled={!state.script}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download size={14} /> Export
+              </button>
+              <button
+                onClick={handleSaveProject}
+                disabled={!state.topic}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save size={14} /> Save
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Presets */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-xs text-slate-500 flex items-center gap-1 mr-2">
+              <Sparkles size={12} /> Quick Presets:
+            </span>
+            {presets.map(preset => (
+              <button
+                key={preset.id}
+                onClick={() => applyPreset(preset)}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-purple-600/20 border border-slate-700 hover:border-purple-500 rounded-full text-xs text-slate-300 hover:text-white transition"
+              >
+                {preset.name}
+              </button>
+            ))}
           </div>
 
           <div className="space-y-4">
@@ -435,7 +547,24 @@ const ProjectBuilder: React.FC<ProjectBuilderProps> = ({ initialTopic, apiKey, y
                 {BGM_OPTIONS.map((opt) => (
                   <option key={opt.id} value={opt.url}>{opt.name}</option>
                 ))}
+                {customBgmUrl && <option value={customBgmUrl}>🎵 {customBgmFile?.name || 'Custom BGM'}</option>}
               </select>
+
+              {/* Custom BGM Upload */}
+              <div className="flex items-center gap-2 mb-3">
+                <label className="flex-1 cursor-pointer">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 border border-dashed border-slate-600 hover:border-purple-500 rounded-lg text-xs text-slate-400 hover:text-white transition">
+                    <Upload size={14} />
+                    {customBgmFile ? customBgmFile.name : 'Upload your own BGM (.mp3, .wav)'}
+                  </div>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    onChange={handleBgmUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
 
               <div className="flex items-center gap-3">
                 <Volume2 size={16} className="text-slate-500" />
@@ -686,6 +815,12 @@ const ProjectBuilder: React.FC<ProjectBuilderProps> = ({ initialTopic, apiKey, y
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Search className="text-blue-400" /> SEO Metadata
               </h3>
+              <button
+                onClick={copyAllToClipboard}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-lg text-xs font-medium transition"
+              >
+                <ClipboardCopy size={14} /> Copy All
+              </button>
             </div>
 
             <div className="space-y-4">

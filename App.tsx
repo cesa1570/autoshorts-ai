@@ -202,8 +202,10 @@ const App: React.FC = () => {
             </div>
             <nav className="flex-1 p-3 space-y-1">
               <NavItem id="create" label="Video Generator" icon={Video} />
+              <NavItem id="batch" label="Batch Queue" icon={ListPlus} />
               <NavItem id="social" label="Social Post" icon={Share2} />
               <NavItem id="news" label="Trending News" icon={Newspaper} />
+              <NavItem id="calendar" label="Content Calendar" icon={Calendar} />
               <NavItem id="dashboard" label="Dashboard" icon={LayoutDashboard} />
               <div className="my-3 border-t border-slate-800"></div>
               <button
