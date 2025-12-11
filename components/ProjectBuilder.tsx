@@ -178,6 +178,51 @@ ${hashtagsStr}`;
     addToast('success', '📋 Copied all to clipboard!');
   };
 
+  // Schedule upload state
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduleTime, setScheduleTime] = useState('');
+
+  // One-Click Full Automation
+  const handleOneClickAutomation = async () => {
+    if (!state.topic) {
+      addToast('warning', 'กรุณาใส่หัวข้อก่อน');
+      return;
+    }
+
+    if (!youtubeToken) {
+      addToast('warning', 'กรุณาเชื่อมต่อ YouTube ก่อน');
+      return;
+    }
+
+    try {
+      addToast('info', '🚀 เริ่ม One-Click Automation...');
+
+      // Generate content first
+      await handleGenerate();
+
+      // Wait for content to be ready then upload
+      setTimeout(async () => {
+        if (playerRef.current && state.script) {
+          addToast('info', '📤 กำลังอัพโหลดไป YouTube...');
+          const scheduledDate = scheduleEnabled && scheduleTime ? new Date(scheduleTime) : undefined;
+          await handleYouTubeUpload(scheduledDate);
+          addToast('success', '🎉 One-Click Automation สำเร็จ!');
+
+          // Send notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('🎉 วิดีโอพร้อมแล้ว!', {
+              body: scheduleEnabled ? `ตั้งเวลาเผยแพร่: ${scheduleTime}` : 'อัพโหลดสำเร็จ!',
+              icon: '/favicon.ico'
+            });
+          }
+        }
+      }, 5000); // Wait for video to be ready
+
+    } catch (error) {
+      addToast('error', `Automation failed: ${(error as Error).message}`);
+    }
+  };
+
 
   const updateProgress = (stepName: string, status: 'pending' | 'active' | 'done' | 'error') => {
     setProgressSteps(prev => {
@@ -287,7 +332,7 @@ ${hashtagsStr}`;
     addToast('success', 'Project saved!');
   };
 
-  const handleYouTubeUpload = async () => {
+  const handleYouTubeUpload = async (scheduledTime?: Date) => {
     if (state.status !== 'ready' || !state.script) return;
 
     const token = youtubeToken;
@@ -307,7 +352,8 @@ ${hashtagsStr}`;
         videoBlob,
         state.script.seoTitle || state.script.title,
         state.script.longDescription || state.script.description,
-        token
+        token,
+        scheduledTime
       );
 
       setUploadStatus('success');
@@ -316,7 +362,11 @@ ${hashtagsStr}`;
         markProjectUploaded(projectId);
       }
 
-      addToast('success', 'Video uploaded to YouTube!');
+      if (scheduledTime) {
+        addToast('success', `Video scheduled for ${scheduledTime.toLocaleString('th-TH')}`);
+      } else {
+        addToast('success', 'Video uploaded to YouTube!');
+      }
     } catch (err: any) {
       console.error(err);
       setUploadStatus('error');
@@ -600,6 +650,43 @@ ${hashtagsStr}`;
                 </>
               )}
             </button>
+
+            {/* One-Click Full Automation */}
+            {youtubeToken && (
+              <div className="mt-3 space-y-3">
+                {/* Schedule Toggle */}
+                <div className="flex items-center gap-3 p-3 bg-slate-900 rounded-lg border border-slate-700">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={scheduleEnabled}
+                      onChange={(e) => setScheduleEnabled(e.target.checked)}
+                      className="w-4 h-4 accent-purple-600"
+                    />
+                    <span className="text-sm text-slate-300">⏰ ตั้งเวลา Upload</span>
+                  </label>
+                  {scheduleEnabled && (
+                    <input
+                      type="datetime-local"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                      className="flex-1 bg-slate-800 border border-slate-600 rounded px-2 py-1 text-sm text-white"
+                      min={new Date().toISOString().slice(0, 16)}
+                    />
+                  )}
+                </div>
+
+                {/* One-Click Button */}
+                <button
+                  onClick={handleOneClickAutomation}
+                  disabled={!state.topic || state.status === 'generating_script' || state.status === 'generating_assets'}
+                  className="w-full py-3 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-500 hover:to-teal-500 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-green-900/20"
+                >
+                  🚀 One-Click Full Automation
+                </button>
+                <p className="text-xs text-slate-500 text-center">Generate → Render → Upload YouTube ในคลิกเดียว!</p>
+              </div>
+            )}
           </div>
         </div>
 
