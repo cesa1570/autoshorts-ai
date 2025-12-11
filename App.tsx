@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Video, Zap, Settings, Github, Menu, X, Newspaper, Key, Save, Share2, LogOut, Youtube, User, Link2, ListPlus, Calendar, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Video, Zap, Settings, Github, Menu, X, Newspaper, Key, Save, Share2, LogOut, Youtube, User, Link2, ListPlus, Calendar, Sparkles, Image, DollarSign, Subtitles, SplitSquareVertical, Moon, Sun } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import ProjectBuilder from './components/ProjectBuilder';
 import TrendingNews from './components/TrendingNews';
@@ -7,13 +7,20 @@ import SocialPostGenerator from './components/SocialPostGenerator';
 import BatchQueue from './components/BatchQueue';
 import ContentCalendar from './components/ContentCalendar';
 import AutoTopicGenerator from './components/AutoTopicGenerator';
+import ThumbnailGenerator from './components/ThumbnailGenerator';
+import RevenueTracker from './components/RevenueTracker';
+import SubtitleGenerator from './components/SubtitleGenerator';
+import ABTitleTesting from './components/ABTitleTesting';
 import { useToast } from './components/ToastContext';
 import { getAuthState, signIn, signOut, isOAuthConfigured, setGoogleClientId, AuthState } from './services/authService';
+import { useTheme } from './components/ThemeContext';
+import { useKeyboardShortcuts, getAppShortcuts } from './hooks/useKeyboardShortcuts';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar' | 'autotopic'>('create');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar' | 'autotopic' | 'thumbnail' | 'revenue' | 'subtitle' | 'abtest'>('create');
   const [menuOpen, setMenuOpen] = useState(false);
   const { addToast } = useToast();
+  const { isDark, toggleTheme } = useTheme();
 
   // Topic Handling
   const [selectedNewsTopic, setSelectedNewsTopic] = useState<string>('');
@@ -36,6 +43,15 @@ const App: React.FC = () => {
     // Check YouTube auth status
     setAuthState(getAuthState());
   }, []);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts(getAppShortcuts({
+    openSettings: () => setSettingsOpen(true),
+    toggleTheme: toggleTheme,
+    goToCreate: () => setActiveTab('create'),
+    goToBatch: () => setActiveTab('batch'),
+    goToDashboard: () => setActiveTab('dashboard'),
+  }));
 
   const saveSettings = () => {
     localStorage.setItem('gemini_api_key', customApiKey);
@@ -84,7 +100,7 @@ const App: React.FC = () => {
     setMenuOpen(false);
   };
 
-  const NavItem = ({ id, label, icon: Icon }: { id: 'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar' | 'autotopic', label: string, icon: any }) => (
+  const NavItem = ({ id, label, icon: Icon }: { id: 'dashboard' | 'create' | 'news' | 'social' | 'batch' | 'calendar' | 'autotopic' | 'thumbnail' | 'revenue' | 'subtitle' | 'abtest', label: string, icon: any }) => (
     <button
       onClick={() => { setActiveTab(id); setMenuOpen(false); }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors text-sm ${activeTab === id
@@ -116,14 +132,27 @@ const App: React.FC = () => {
           <NavItem id="create" label="Video Generator" icon={Video} />
           <NavItem id="batch" label="Batch Queue" icon={ListPlus} />
           <NavItem id="autotopic" label="Auto Topics" icon={Sparkles} />
+          <NavItem id="thumbnail" label="Thumbnail" icon={Image} />
+          <NavItem id="subtitle" label="Subtitles" icon={Subtitles} />
           <NavItem id="social" label="Social Post" icon={Share2} />
 
           <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-3 py-2 mt-4">จัดการ</p>
           <NavItem id="news" label="Trending News" icon={Newspaper} />
           <NavItem id="calendar" label="Content Calendar" icon={Calendar} />
+          <NavItem id="revenue" label="Revenue" icon={DollarSign} />
+          <NavItem id="abtest" label="A/B Testing" icon={SplitSquareVertical} />
           <NavItem id="dashboard" label="Dashboard" icon={LayoutDashboard} />
 
           <div className="my-3 border-t border-slate-800"></div>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-colors text-sm"
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            {isDark ? 'Light Mode' : 'Dark Mode'}
+          </button>
 
           <button
             onClick={() => setSettingsOpen(true)}
@@ -229,8 +258,12 @@ const App: React.FC = () => {
           {activeTab === 'create' && <ProjectBuilder initialTopic={selectedNewsTopic} apiKey={customApiKey} youtubeToken={authState.accessToken} />}
           {activeTab === 'batch' && <BatchQueue apiKey={customApiKey} />}
           {activeTab === 'autotopic' && <AutoTopicGenerator apiKey={customApiKey} onSelectTopic={(topic) => { setSelectedNewsTopic(topic); setActiveTab('create'); }} />}
+          {activeTab === 'thumbnail' && <ThumbnailGenerator apiKey={customApiKey} />}
+          {activeTab === 'subtitle' && <SubtitleGenerator />}
           {activeTab === 'news' && <TrendingNews onSelectTopic={handleNewsTopicSelect} apiKey={customApiKey} />}
           {activeTab === 'calendar' && <ContentCalendar />}
+          {activeTab === 'revenue' && <RevenueTracker />}
+          {activeTab === 'abtest' && <ABTitleTesting />}
           {activeTab === 'social' && <SocialPostGenerator initialTopic={selectedNewsTopic} apiKey={customApiKey} />}
         </div>
       </main>
