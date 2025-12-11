@@ -119,22 +119,42 @@ export const generateScript = async (topic: string, mode: GeneratorMode, apiKey?
   });
 };
 
-export const fetchTrendingNews = async (apiKey?: string, region: 'global' | 'thailand' = 'global'): Promise<NewsItem[]> => {
+export const fetchTrendingNews = async (apiKey?: string, region: 'global' | 'thailand' = 'global', category: string = 'all'): Promise<NewsItem[]> => {
   return withRetry(async () => {
     const ai = getClient(apiKey);
+
+    // Category mapping for prompts
+    const categoryPrompts: Record<string, string> = {
+      'all': 'any viral topic',
+      'sports': 'Sports news (ข่าวกีฬา) - Football, Boxing, MMA, Olympics, eSports, Thai League',
+      'crime': 'Crime & Murder news (ข่าวอาชญากรรม/ฆาตกรรม) - Murder cases, robbery, scams, police investigations',
+      'entertainment': 'Entertainment news (ข่าวบันเทิง) - Celebrity drama, movies, music, TV shows, gossip',
+      'tech': 'Technology news (ข่าวเทคโนโลยี) - AI, gadgets, smartphones, apps, startups',
+      'other': 'Unusual & Bizarre news (ข่าวแปลก) - Weird stories, mysteries, unexplained events, viral moments'
+    };
+
+    const categoryFocus = categoryPrompts[category] || categoryPrompts['all'];
 
     let prompt = "";
 
     if (region === 'thailand') {
       prompt = `Generate 9 viral, trending news headlines specifically for THAILAND (ประเทศไทย) that would be popular on TikTok/Shorts RIGHT NOW.
-      Focus on: Thai Celebrity Dramas, Lottery/Horoscopes (หวย/ดวง), Viral Social Media clips, Local Mysteries, or Hot Political/Social issues in Thailand.
-      IMPORTANT: Output the 'headline' and 'summary' in THAI Language (ภาษาไทย).
-      Include a plausible 'source' (e.g. Thairath, Sanook, Khaosod) and a relative 'date' (e.g. 2 hours ago, Today).
+      
+      CATEGORY FOCUS: ${categoryFocus}
+      
+      IMPORTANT: 
+      - Output the 'headline' and 'summary' in THAI Language (ภาษาไทย).
+      - Include a plausible 'source' (e.g. Thairath, Sanook, Khaosod, Thai PBS, Amarin TV).
+      - Include a relative 'date' (e.g. "2 ชั่วโมงที่แล้ว", "วันนี้", "เมื่อวาน").
+      - Make headlines catchy and viral-worthy.
       Return a JSON array of objects.`;
     } else {
       prompt = `Generate 9 viral, trending news headlines or topics that would be popular on YouTube Shorts / TikTok RIGHT NOW.
-      Focus on: Tech, Weird Science, Global Mysteries, Pop Culture, or bizarre true stories.
-      Include a plausible 'source' (e.g. BBC, The Verge, Reddit) and a relative 'date' (e.g. 5 hours ago, Yesterday).
+      
+      CATEGORY FOCUS: ${categoryFocus}
+      
+      Include a plausible 'source' (e.g. BBC, CNN, The Verge, Reddit, TMZ) and a relative 'date' (e.g. 5 hours ago, Yesterday).
+      Make headlines catchy and viral-worthy.
       Return a JSON array of objects.`;
     }
 
