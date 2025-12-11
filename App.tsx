@@ -282,6 +282,26 @@ const App: React.FC = () => {
             </div>
 
             <div className="p-6 space-y-6">
+              {/* Mock Mode Toggle */}
+              <div className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-lg">
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <span className="text-sm font-medium text-white">🧪 Mock Mode</span>
+                    <p className="text-xs text-slate-400 mt-1">ใช้ข้อมูลจำลอง ไม่ต้องใช้ API</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={localStorage.getItem('mock_mode') === 'true'}
+                    onChange={(e) => {
+                      localStorage.setItem('mock_mode', e.target.checked ? 'true' : 'false');
+                      addToast('info', e.target.checked ? 'Mock Mode เปิดแล้ว!' : 'Mock Mode ปิดแล้ว');
+                      window.location.reload();
+                    }}
+                    className="w-5 h-5 accent-purple-600"
+                  />
+                </label>
+              </div>
+
               {/* Gemini API Key */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Gemini API Key</label>
