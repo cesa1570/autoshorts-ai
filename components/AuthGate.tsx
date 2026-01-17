@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { authManagementService, UserProfile } from '../services/authManagementService';
 import { paymentService } from '../services/paymentService';
+import { useApp } from '../contexts/AppContext';
 import { Lock, Mail, Key, Loader2, Sparkles, UserPlus, LogIn, AlertTriangle } from 'lucide-react';
 import LandingPage from './LandingPage';
 import PricingModal from './PricingModal';
@@ -26,6 +27,7 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     const [proCount, setProCount] = useState(0);
     const [pendingPurchase, setPendingPurchase] = useState<string | null>(null);
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | null>(null);
+    const { setUserId, setLicenseTier } = useApp();
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -50,6 +52,16 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     const fetchProfile = async () => {
         const p = await authManagementService.getProfile();
         setProfile(p);
+
+        // Sync with App Context
+        if (p) {
+            setUserId(p.id);
+            setLicenseTier(p.licenseTier);
+        } else {
+            setUserId(null);
+            setLicenseTier('free');
+        }
+
         setLoading(false);
 
         // If user just logged in and has a pending purchase, trigger it
@@ -60,7 +72,7 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     };
 
     const fetchProCount = async () => {
-        const count = await authManagementService.getProUserCount();
+        const count = await authManagementService.getSubscriberCount();
         setProCount(count);
     };
 

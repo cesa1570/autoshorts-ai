@@ -17,6 +17,8 @@ import ArtStyleSelector from './ArtStyleSelector';
 import VoiceSelector from './VoiceSelector';
 import CustomDropdown from './CustomDropdown';
 import ExportSuccessModal from './ExportSuccessModal';
+import UpgradeRequiredModal from './UpgradeRequiredModal';
+import PricingModal from './PricingModal';
 import { saveProject, listProjects, ProjectData, exportProjectToJson, deleteProject, addToQueue, validateYoutubeMetadata, getProject } from '../services/projectService';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
 import {
@@ -100,7 +102,10 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
   const [showHistory, setShowHistory] = useState(false);
   const [showStyleSelector, setShowStyleSelector] = useState(false);
   const [showVoiceSelector, setShowVoiceSelector] = useState(false);
-  const [showHandoffModal, setShowHandoffModal] = useState(false); // New
+  const [showHandoffModal, setShowHandoffModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState<string | null>(null);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'draft' | 'saving' | 'saved' | 'error'>('saved');
   const [lastSavedTime, setLastSavedTime] = useState<number | undefined>(undefined);
   const [showYoutubeModal, setShowYoutubeModal] = useState(false);
@@ -125,7 +130,6 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
   const [exportProgress, setExportProgress] = useState(0);
   const [exportStage, setExportStage] = useState('');
   const [currentFrame, setCurrentFrame] = useState(0);
-  const [showSuccessModal, setShowSuccessModal] = useState<string | null>(null);
   const [totalFrames, setTotalFrames] = useState(0);
   const [etaSeconds, setEtaSeconds] = useState(0);
   const [renderFps, setRenderFps] = useState(0);
@@ -232,7 +236,7 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
 
     // License Guard
     if (licenseTier === 'free') {
-      alert("Upgrade Required: Your current tier does not support AI generation.");
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -884,11 +888,30 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
         isLoading={isGenerating}
       />
 
-      <ExportSuccessModal
-        isOpen={!!showSuccessModal}
-        onClose={() => setShowSuccessModal(null)}
-        filePath={showSuccessModal || ''}
-      />
+      {showSuccessModal && (
+        <ExportSuccessModal
+          filePath={showSuccessModal}
+          onClose={() => setShowSuccessModal(null)}
+        />
+      )}
+
+      {showUpgradeModal && (
+        <UpgradeRequiredModal
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgrade={() => {
+            setShowUpgradeModal(false);
+            setShowPricingModal(true);
+          }}
+          description="Cinema-scale production requires an activated CINEMA PRO identity. Neural rendering pipelines are restricted to verified operators."
+        />
+      )}
+
+      {showPricingModal && (
+        <PricingModal
+          onClose={() => setShowPricingModal(false)}
+          currentTier={licenseTier}
+        />
+      )}
       <MobileHandoffModal
         isOpen={showHandoffModal}
         onClose={() => setShowHandoffModal(false)}

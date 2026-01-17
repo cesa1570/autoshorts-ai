@@ -13,6 +13,8 @@ import VoiceSelector from './VoiceSelector';
 import { useApp } from '../contexts/AppContext';
 import { Draft } from '../types';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
+import UpgradeRequiredModal from './UpgradeRequiredModal';
+import PricingModal from './PricingModal';
 
 interface PodcastLine {
     speaker: 1 | 2;
@@ -76,7 +78,9 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
     const playerRef = useRef<VideoPlayerRef>(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
-    const [showHandoffModal, setShowHandoffModal] = useState(false); // New
+    const [showHandoffModal, setShowHandoffModal] = useState(false);
+    const [showPricingModal, setShowPricingModal] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Hydrate
     const hydrateScenes = async (scenes: any[]) => {
@@ -156,7 +160,7 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
 
         // License Guard
         if (licenseTier === 'free') {
-            alert("Upgrade Required: Your current tier does not support AI generation.");
+            setShowUpgradeModal(true);
             return;
         }
 
@@ -527,12 +531,32 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                 isLoading={isGeneratingScript}
             />
 
-            <MobileHandoffModal
-                isOpen={showHandoffModal}
-                onClose={() => setShowHandoffModal(false)}
-                caption={script?.title}
-                hashtags={[topic.replace(/\s+/g, ''), 'podcast', 'ai']}
-            />
+            {showHandoffModal && (
+                <MobileHandoffModal
+                    isOpen={showHandoffModal}
+                    onClose={() => setShowHandoffModal(false)}
+                    title={script?.title}
+                    hashtags={[topic.replace(/\s+/g, ''), 'podcast', 'ai']}
+                />
+            )}
+
+            {showUpgradeModal && (
+                <UpgradeRequiredModal
+                    onClose={() => setShowUpgradeModal(false)}
+                    onUpgrade={() => {
+                        setShowUpgradeModal(false);
+                        setShowPricingModal(true);
+                    }}
+                    description="Neural broadcasting pipelines are reserved for premium operators. Upgrade to CINEMA PRO to activate the Podcast Studio."
+                />
+            )}
+
+            {showPricingModal && (
+                <PricingModal
+                    onClose={() => setShowPricingModal(false)}
+                    currentTier={licenseTier}
+                />
+            )}
         </div>
     );
 };

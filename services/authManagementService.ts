@@ -71,14 +71,14 @@ export const authManagementService = {
         if (error) throw error;
     },
 
-    async getProUserCount(): Promise<number> {
+    async getSubscriberCount(): Promise<number> {
         const { count, error } = await supabase
             .from('profiles')
             .select('*', { count: 'exact', head: true })
-            .eq('license_tier', 'pro');
+            .in('license_tier', ['pro', 'enterprise']);
 
         if (error) {
-            console.error('Error fetching pro count:', error);
+            console.error('Error fetching subscriber count:', error);
             return 0;
         }
         return count || 0;

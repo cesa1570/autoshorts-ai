@@ -16,6 +16,8 @@ import ArtStyleSelector, { StyleOption } from './ArtStyleSelector';
 import VoiceSelector, { VOICES } from './VoiceSelector';
 import ExportSuccessModal from './ExportSuccessModal';
 import MobileHandoffModal from './MobileHandoffModal';
+import UpgradeRequiredModal from './UpgradeRequiredModal';
+import PricingModal from './PricingModal';
 import { useApp } from '../contexts/AppContext';
 import { saveProject, listProjects, ProjectData, getProject, addToQueue, validateYoutubeMetadata } from '../services/projectService';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
@@ -104,6 +106,9 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [parallelBatchSize, setParallelBatchSize] = useState<1 | 2 | 3 | 4 | 5 | 'all'>('all');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const RESOLUTIONS = {
     '720p': { width: 720, height: 1280 },
@@ -207,7 +212,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
 
     // License Guard
     if (licenseTier === 'free') {
-      alert("Upgrade Required: Your current tier does not support AI generation.");
+      setShowUpgradeModal(true);
       return;
     }
 
@@ -230,7 +235,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
       setState(prev => ({ ...prev, script: scriptData, status: 'idle' }));
       setSaveStatus('saved');
 
-      const projectId = state.id || `short-${Date.now()}`;
+      const projectId = state.id || `short - ${Date.now()} `;
       if (!state.id) setState(prev => ({ ...prev, id: projectId }));
 
       // Auto-save Draft
@@ -424,7 +429,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
 
     const pendingCount = state.script.scenes.filter(s => s.status !== 'completed' && s.status !== 'skipped').length;
     if (pendingCount > 0) {
-      if (confirm(`Unfinished nodes detected (${pendingCount}). Synthesize all before master render?`)) {
+      if (confirm(`Unfinished nodes detected(${pendingCount}).Synthesize all before master render ? `)) {
         await handleGenerateAll();
       } else { return; }
     }
@@ -447,7 +452,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
       });
       setCurrentVideoBlob(blob);
 
-      const filename = `black-label-shorts-${Date.now()}.mp4`;
+      const filename = `lazyautocreator - shorts - ${Date.now()}.mp4`;
 
       if (window.electron) {
         setExportStage('Saving to Desktop...');
@@ -457,7 +462,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
         if (result.success) {
           setExportProgress(100);
           setExportStage('Production Complete');
-          // alert(`Master Production Saved:\n${result.path}`);
+          // alert(`Master Production Saved: \n${ result.path } `);
           setShowSuccessModal(result.path);
         } else if (!result.canceled) {
           alert("Native Save Failed: " + result.error);
@@ -485,7 +490,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
   const handleSaveProject = async () => {
     if (!state.script) return; setSaveStatus('saving');
     const project: ProjectData = {
-      id: state.id || `shorts-${Date.now()}`,
+      id: state.id || `shorts - ${Date.now()} `,
       userId: userId || 'anonymous',
       type: 'shorts',
       title: state.script.title,
@@ -506,7 +511,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
         userId: project.userId,
         type: 'shorts',
         title: project.title,
-        subtitle: `${state.script.scenes.length} scenes • ${mode}`,
+        subtitle: `${state.script.scenes.length} scenes • ${mode} `,
         previewImageUrl,
         createdAt: Date.now(),
         lastModified: Date.now(),
@@ -601,7 +606,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
           <button
             onClick={handleExport}
             disabled={totalCount === 0 || isExporting}
-            className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-2xl flex items-center justify-center gap-4 transition-all active:scale-95 ${completedCount < totalCount ? 'bg-white/5 text-neutral-500 border border-white/5' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'}`}
+            className={`w - full py - 5 rounded - 2xl font - black uppercase text - [10px] tracking - [0.3em] shadow - 2xl flex items - center justify - center gap - 4 transition - all active: scale - 95 ${completedCount < totalCount ? 'bg-white/5 text-neutral-500 border border-white/5' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'} `}
           >
             <Download size={18} />
             {completedCount < totalCount ? 'System Standby' : 'Generate Master MP4'}
@@ -675,10 +680,10 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                   {hasGemini && (
                     <button
                       onClick={() => setSelectedProvider('gemini')}
-                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'gemini'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                        }`}
+                      className={`flex - 1 py - 3 rounded - lg flex items - center justify - center gap - 2 text - [10px] font - black uppercase tracking - widest transition - all ${selectedProvider === 'gemini'
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                        } `}
                     >
                       <Sparkles size={14} /> Gemini 2.0 Flash
                     </button>
@@ -686,10 +691,10 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                   {hasOpenAI && (
                     <button
                       onClick={() => setSelectedProvider('openai')}
-                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'openai'
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                        }`}
+                      className={`flex - 1 py - 3 rounded - lg flex items - center justify - center gap - 2 text - [10px] font - black uppercase tracking - widest transition - all ${selectedProvider === 'openai'
+                          ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
+                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                        } `}
                     >
                       <Zap size={14} /> OpenAI GPT-4o
                     </button>
@@ -697,10 +702,10 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                   {hasVertex && (
                     <button
                       onClick={() => setSelectedProvider('vertex')}
-                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'vertex'
-                        ? 'bg-[#C5A059] text-black shadow-lg shadow-[#C5A059]/50'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                        }`}
+                      className={`flex - 1 py - 3 rounded - lg flex items - center justify - center gap - 2 text - [10px] font - black uppercase tracking - widest transition - all ${selectedProvider === 'vertex'
+                          ? 'bg-[#C5A059] text-black shadow-lg shadow-[#C5A059]/50'
+                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                        } `}
                     >
                       <Sparkles size={14} /> Vertex AI
                     </button>
@@ -782,7 +787,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
           <div className="bg-[#0a0a0a] border border-white/5 rounded-[4rem] overflow-hidden shadow-2xl flex flex-col">
             <div className="flex border-b border-white/5 bg-black/40 p-3 gap-3">
               {[{ id: 'scenes', label: 'Timeline', icon: <Layers size={16} /> }, { id: 'viral', label: 'Aesthetics', icon: <Type size={16} /> }, { id: 'seo', label: 'Distribution', icon: <BarChart3 size={16} /> }].map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`flex-1 py-5 rounded-[2rem] flex items-center justify-center gap-4 text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 ${activeTab === t.id ? 'bg-[#C5A059] text-black shadow-2xl' : 'text-neutral-500 hover:bg-white/5 hover:text-white'}`}>{t.icon} {t.label}</button>
+                <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`flex - 1 py - 5 rounded - [2rem] flex items - center justify - center gap - 4 text - [11px] font - black uppercase tracking - [0.3em] transition - all duration - 500 ${activeTab === t.id ? 'bg-[#C5A059] text-black shadow-2xl' : 'text-neutral-500 hover:bg-white/5 hover:text-white'} `}>{t.icon} {t.label}</button>
               ))}
             </div>
             <div className="p-12">
@@ -810,7 +815,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                           <option value="all">ALL</option>
                         </select>
                       </div>
-                      <button onClick={handleGenerateAll} disabled={isProcessingAll} className={`px-12 py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center gap-4 active:scale-95 ${isProcessingAll ? 'bg-white/10 text-white animate-pulse' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'}`}>
+                      <button onClick={handleGenerateAll} disabled={isProcessingAll} className={`px - 12 py - 5 rounded - 2xl text - [11px] font - black uppercase tracking - [0.3em] transition - all shadow - 2xl flex items - center gap - 4 active: scale - 95 ${isProcessingAll ? 'bg-white/10 text-white animate-pulse' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'} `}>
                         {isProcessingAll ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                         {isProcessingAll ? 'Processing Cluster' : 'Initialize All Nodes'}
                       </button>
@@ -879,6 +884,24 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
         hashtags={state.script?.hashtags}
       // videoUrl={...} // Not available until export, can pass if we have last exported path, but file:// won't work on mobile.
       />
+
+      {showUpgradeModal && (
+        <UpgradeRequiredModal
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgrade={() => {
+            setShowUpgradeModal(false);
+            setShowPricingModal(true);
+          }}
+          description="Your current Operator Identity is restricted to basic observation. Upgrade to CINEMA PRO to enable AI automation and neural rendering."
+        />
+      )}
+
+      {showPricingModal && (
+        <PricingModal
+          onClose={() => setShowPricingModal(false)}
+          currentTier={licenseTier}
+        />
+      )}
     </div>
   );
 };
