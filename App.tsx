@@ -15,7 +15,7 @@ import UsageAnalytics from './components/UsageAnalytics';
 import SocialHub from './components/SocialHub';
 import UserProfile from './components/UserProfile';
 import AuthGate from './components/AuthGate';
-import AdminMissionControl from './components/AdminMissionControl';
+import MissionControl from './components/MissionControl';
 import { authManagementService } from './services/authManagementService';
 
 import { AutomationProvider } from './contexts/AutomationContext';
@@ -449,7 +449,7 @@ const App: React.FC = () => {
                     </div>
                     {activeTab === 'social' && <SocialHub />}
                     {activeTab === 'profile' && <UserProfile />}
-                    {activeTab === 'admin' && <AdminMissionControl />}
+                    {activeTab === 'admin' && <MissionControl />}
                     {activeTab === 'analytics' && <UsageAnalytics />}
                     {activeTab === 'settings' && <Settings />}
                   </div>
