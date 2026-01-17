@@ -141,6 +141,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
 
             {/* --- Hero Section --- */}
             <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+                {/* Video Background */}
+                <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+                    <video
+                        className="w-full h-full object-cover blur-3xl scale-110 grayscale"
+                        autoPlay loop muted playsInline
+                        src="/cinemabg.mp4"
+                    />
+                </div>
+
                 {/* Abstract Background */}
                 <div className="absolute inset-0 opacity-20 pointer-events-none">
                     <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-[#C5A059] rounded-full blur-[150px] animate-pulse duration-[5000ms]" />

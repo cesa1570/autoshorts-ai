@@ -3,7 +3,7 @@ import { supabase } from '../services/supabaseClient';
 import { authManagementService, UserProfile } from '../services/authManagementService';
 import { paymentService } from '../services/paymentService';
 import { useApp } from '../contexts/AppContext';
-import { Lock, Mail, Key, Loader2, Sparkles, UserPlus, LogIn, AlertTriangle } from 'lucide-react';
+import { Lock, Mail, Key, Loader2, Sparkles, UserPlus, LogIn, AlertTriangle, ArrowLeft } from 'lucide-react';
 import LandingPage from './LandingPage';
 import PricingModal from './PricingModal';
 
@@ -183,6 +183,13 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
                     style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, #C5A059 0%, transparent 50%)', filter: 'blur(100px)' }} />
 
                 <div className="w-full max-w-md bg-black/60 backdrop-blur-3xl border border-white/10 p-10 rounded-[3rem] shadow-2xl relative">
+                    <button
+                        onClick={() => setShowLoginForm(false)}
+                        className="absolute top-8 left-8 p-2 text-neutral-500 hover:text-[#C5A059] transition-colors rounded-full hover:bg-white/5 active:scale-95"
+                    >
+                        <ArrowLeft size={20} />
+                    </button>
+
                     <div className="flex flex-col items-center gap-6 mb-10">
                         <div className="w-20 h-20 bg-gradient-to-br from-[#C5A059] to-[#8a6d3b] rounded-3xl flex items-center justify-center shadow-lg transform rotate-12">
                             <Lock size={32} className="text-black -rotate-12" />
