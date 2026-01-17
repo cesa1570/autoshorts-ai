@@ -466,13 +466,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                     onClose={() => setShowLegal(null)}
                 />
             )}
-            {/* Upgrade Modal for interactions that might require it, though mainly handled by parent */}
-            <UpgradeRequiredModal
-                isOpen={false}
-                onClose={() => { }}
-                featureName=""
-                onUpgrade={() => { }}
-            />
         </div >
     );
 };
