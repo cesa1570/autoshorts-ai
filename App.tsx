@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Video, Zap, Clapperboard, Grid, Key, Shield, Settings as SettingsIcon, Activity, Mic, Share2, User, Clock
 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import TitleBar from './components/TitleBar';
 
 // Components
@@ -472,6 +473,7 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
+          <Analytics />
         </AutomationProvider>
       </AuthGate>
     </AppContext.Provider>
