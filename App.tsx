@@ -15,7 +15,7 @@ import UsageAnalytics from './components/UsageAnalytics';
 import SocialHub from './components/SocialHub';
 import UserProfile from './components/UserProfile';
 import AuthGate from './components/AuthGate';
-import AdminDashboard from './components/AdminDashboard';
+import AdminMissionControl from './components/AdminMissionControl';
 import { authManagementService } from './services/authManagementService';
 
 import { AutomationProvider } from './contexts/AutomationContext';
@@ -23,6 +23,7 @@ import { AppContext, AppContextType } from './contexts/AppContext';
 import { setGlobalApiKey, setGlobalTier } from './services/geminiService';
 import { handleAuthCallback } from './services/authService';
 import { Draft } from './types';
+import { Analytics } from "@vercel/analytics/react"
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'hub' | 'create' | 'long' | 'podcast' | 'settings' | 'analytics' | 'social' | 'profile' | 'admin'>('hub');
@@ -66,6 +67,11 @@ const App: React.FC = () => {
   const [vertexLocation, setVertexLocation] = useState(() => localStorage.getItem('vertex_location') || 'us-central1');
   const [vertexServiceKey, setVertexServiceKey] = useState(() => localStorage.getItem('vertex_service_key') || '');
   const [vertexApiKey, setVertexApiKey] = useState(() => localStorage.getItem('vertex_api_key') || '');
+
+  useEffect(() => {
+    console.log("DEBUG: Current User Email:", userEmail);
+    console.log("DEBUG: Is Match?", userEmail?.toLowerCase().trim() === 'callmetrapboi1@gmail.com');
+  }, [userEmail]);
 
   useEffect(() => {
     const today = new Date().toDateString();
@@ -325,6 +331,7 @@ const App: React.FC = () => {
             <div className="fixed top-1/2 -right-24 w-80 h-80 bg-[#C5A059]/3 rounded-full blur-[100px] pointer-events-none" />
 
             <TitleBar />
+            <Analytics />
             <div className={`flex h-screen ${typeof window !== 'undefined' && window.electron ? 'pt-[30px]' : ''}`}>
 
               <aside className={`hidden md:flex flex-col fixed inset-y-0 z-50 bg-[#080808]/80 backdrop-blur-3xl border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-24 p-4' : 'w-72 p-8'}`}>
@@ -442,7 +449,7 @@ const App: React.FC = () => {
                     </div>
                     {activeTab === 'social' && <SocialHub />}
                     {activeTab === 'profile' && <UserProfile />}
-                    {activeTab === 'admin' && <AdminDashboard />}
+                    {activeTab === 'admin' && <AdminMissionControl />}
                     {activeTab === 'analytics' && <UsageAnalytics />}
                     {activeTab === 'settings' && <Settings />}
                   </div>
