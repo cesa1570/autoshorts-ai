@@ -438,10 +438,12 @@ export interface PodcastScriptOptions {
   host2Name: string;
   language: string;
   modelId?: string;
+  duration?: string;
 }
 
 export const generatePodcastScriptAdvanced = async (topic: string, options: PodcastScriptOptions): Promise<any> => {
-  const { style, host1Name, host2Name, language, modelId } = options;
+  const { style, host1Name, host2Name, language, modelId, duration } = options;
+  const durationPrompt = duration ? `Target Duration: ${duration} (approx. ${duration === 'Short' ? '1-2 mins' : duration === 'Medium' ? '5 mins' : '10+ minutes'}). Generate a highly detailed, extensive script.` : '';
   const stylePrompt = PODCAST_STYLE_PROMPTS[style] || PODCAST_STYLE_PROMPTS['casual'];
   const model = modelId || 'gemini-3-flash-preview';
 

@@ -59,7 +59,8 @@ export const unifiedGenerateScript = async (
             host1Name: options.host1Name || 'Host A',
             host2Name: options.host2Name || 'Host B',
             language: options.language || 'Auto',
-            modelId
+            modelId,
+            duration: options.duration
         });
     }
 

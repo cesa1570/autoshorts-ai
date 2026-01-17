@@ -112,6 +112,7 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
         return true;
     });
     const [language, setLanguage] = useState<string>('Auto');
+    const [duration, setDuration] = useState<string>('Short');
     const [isGeneratingScript, setIsGeneratingScript] = useState(false);
     const [script, setScript] = useState<PodcastScript | null>(null);
 
@@ -251,7 +252,8 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                 mode: 'podcast',
                 podcastStyle,
                 host1Name,
-                host2Name
+                host2Name,
+                duration
             });
             setScript(result);
             saveDraft(result);
@@ -419,6 +421,18 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                                             { value: 'English', label: 'English' },
                                             { value: 'Japanese', label: 'Japanese' },
                                             { value: 'Chinese', label: 'Chinese' },
+                                        ]}
+                                    />
+                                </div>
+                                <div className="w-full">
+                                    <CustomDropdown
+                                        value={duration}
+                                        onChange={(val) => setDuration(val as any)}
+                                        placeholder="Duration"
+                                        options={[
+                                            { value: 'Short', label: 'Short (1-2m)' },
+                                            { value: 'Medium', label: 'Medium (5m)' },
+                                            { value: 'Long', label: 'Long (10m+)' },
                                         ]}
                                     />
                                 </div>
