@@ -94,7 +94,8 @@ serve(async (req) => {
                 customer_email: user.email,
                 metadata: {
                     userId: user.id,
-                    planType: priceId === 'price_1SqCAaChLIAUz0sEi5uzftfQ' ? 'enterprise' : 'pro',
+                    // Check for both LIVE and TEST Early Bird price IDs
+                    planType: ['price_1SqCAaChLIAUz0sEi5uzftfQ', 'price_1SqX0KChLIAUz0sEKWMPY7X1'].includes(priceId) ? 'enterprise' : 'pro',
                     billingCycle: 'yearly'
                 }
             })
