@@ -69,7 +69,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ onClose, currentTier }) => 
         },
         {
             id: 'standard_pro',
-            priceId: 'price_yearly_standard', // User needs to update this with real $99 ID
+            priceId: 'price_1SqCD0ChLIAUz0sE8Ylb8t0T', // $99 Yearly - Standard Pro
             name: 'STANDARD PRO',
             price: '$99',
             period: '/YR',

@@ -89,7 +89,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                         <a href="#features" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Features</a>
                         <a href="#roadmap" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Roadmap</a>
                         <a href="#tutorial" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Tutorial</a>
-                        <button onClick={onLogin} className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">เริ่มใช้งาน</button>
+                        <button onClick={onLogin} className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Get Started</button>
                         <button
                             onClick={onLogin}
                             className="bg-[#C5A059] text-black px-6 py-2 rounded-lg font-black text-sm uppercase tracking-wider hover:bg-[#d4af37] transition-all"
@@ -132,7 +132,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                             onClick={onLogin}
                             className="bg-[#C5A059] text-black px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-[#d4af37] transition-all shadow-[0_0_40px_rgba(197,160,89,0.3)] flex items-center gap-3"
                         >
-                            <Sparkles size={20} /> เริ่มใช้งาน
+                            <Sparkles size={20} /> Get Started Free
                         </button>
                         <a
                             href="#tutorial"
@@ -309,7 +309,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                 </li>
                             </ul>
                             <button
-                                onClick={() => onPurchase('price_yearly_standard')}
+                                onClick={() => onPurchase('price_1SqCD0ChLIAUz0sE8Ylb8t0T')}
                                 className="w-full bg-white/5 border border-white/10 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all active:scale-95"
                             >
                                 Get Started
