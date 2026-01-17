@@ -1,0 +1,143 @@
+
+export interface Scene {
+  id: number;
+  visual_prompt: string;
+  voiceover: string;
+  duration_est: number; // in seconds
+  imageUrl?: string;
+  videoUrl?: string; // URL for the generated moving video
+  audioBuffer?: AudioBuffer;
+  audioBase64?: string;
+  status?: 'pending' | 'generating' | 'completed' | 'failed' | 'skipped';
+  assetStage?: 'audio' | 'visual' | 'script';
+  statusDetail?: string; // Detailed status like "Polling frame 48..." or "ETA: 12s"
+  processingProgress?: number;
+  error?: string;
+  transition?: 'none' | 'fade' | 'zoom_in' | 'zoom_out' | 'slide_left' | 'slide_right' | 'crossfade';
+  isMuted?: boolean;
+  videoVolume?: number; // 0 to 1
+  stageLabel?: string; // e.g. "HOOK", "INTRO", etc.
+}
+
+export interface SubtitleStyle {
+  fontSize: number;
+  textColor: string;
+  backgroundColor: string; // Hex color
+  backgroundOpacity: number; // 0 to 1
+  verticalOffset: number; // Percentage from bottom (5 to 90)
+  fontFamily: 'Kanit' | 'Inter' | 'sans-serif';
+  outlineColor?: string;
+  outlineWidth?: number;
+  shadowColor?: string;
+  shadowBlur?: number;
+  fontWeight?: string | number;
+  animation?: 'pop' | 'typewriter' | 'fade' | 'sentence' | 'none';
+}
+
+export interface ScriptData {
+  title: string;
+  seoTitle: string;
+  description: string;
+  longDescription: string;
+  hashtags: string[];
+  seoKeywords: string;
+  scenes: Scene[];
+  thumbnailUrl?: string;
+}
+
+/**
+ * Interface for AI generated social media posts
+ */
+export interface SocialPostData {
+  caption: string;
+  hashtags: string[];
+  image_prompt: string;
+}
+
+export interface ProjectState {
+  id?: string;
+  status: 'idle' | 'generating_script' | 'generating_assets' | 'ready' | 'error';
+  topic: string;
+  script: ScriptData | null;
+  currentStep: string;
+  error?: string;
+}
+
+export enum GeneratorMode {
+  FACTS = 'Knowledge/Facts',
+  MYSTERY = 'Mystery/Horror',
+  CRIME = 'True Crime',
+  NEWS = 'Trending News',
+  HISTORY = 'History/Biography',
+  PHYSICS = 'Physics/Science',
+  CRETACEOUS = 'Prehistoric/Dinosaurs',
+  LONG_VIDEO = 'Cinematic Long Video',
+  SPACE = 'Space/Astronomy',
+  FINANCE = 'Wealth/Money',
+  ASMR = 'ASMR/Chill Facts',
+  DOCUMENTARY = 'Documentary/Special',
+  PODCAST = 'Podcast/Conversation'
+}
+
+export type PolishStyle = 'Viral' | 'Funny' | 'Simple' | 'Dramatic' | 'Professional' | 'Translate';
+
+export interface NewsItem {
+  id: string;
+  headline: string;
+  summary: string;
+  category: string;
+  popularity?: string;
+  virality_score?: number;
+  momentum?: string;
+  velocity?: string;
+  est_reach?: string;
+  source?: string;
+  date?: string;
+  url?: string;
+}
+
+export interface Draft {
+  id: string;
+  userId?: string; // Optional for migration, will be mandatory for new drafts
+  type: 'shorts' | 'long' | 'podcast';
+  title: string;
+  subtitle?: string; // e.g. "Science • 5 scenes"
+  previewImageUrl?: string;
+  createdAt: number;
+  lastModified: number;
+  data: any; // Full state object for the specific creator
+}
+
+export type SocialPlatform = 'youtube' | 'tiktok' | 'instagram' | 'facebook';
+
+export interface SocialAccount {
+  id: string;
+  platform: SocialPlatform;
+  username: string;
+  avatarUrl?: string; // Optional URL for display
+  connectedAt: number;
+  status: 'active' | 'expired' | 'error';
+  connectionMode?: 'api' | 'manual'; // 'manual' means QR/Mobile Handoff only
+  tokenSummary?: string; // e.g. "Expires in 30d"
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  stats?: {
+    subscriberCount?: string;
+    viewCount?: string;
+    videoCount?: string;
+    likeCount?: string;
+    followerCount?: string;
+  };
+}
+
+export interface ScheduledPost {
+  id: string;
+  draftId: string;
+  platforms: string[]; // Account IDs
+  scheduledTime: number; // Unix timestamp
+  status: 'scheduled' | 'posting' | 'published' | 'failed';
+  error?: string;
+  thumbnailUrl?: string;
+  title: string;
+}

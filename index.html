@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://aistudiocdn.com https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: *.googleusercontent.com *.fbcdn.net *.cdninstagram.com; media-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://picsum.photos https://www.googleapis.com https://oauth2.googleapis.com https://graph.facebook.com https://open.tiktokapis.com https://placeholder.supabase.co https://xpblfpscukhojqwhkphr.supabase.co;" />
+  <title>LazyAutoCreator - Autonomous Content Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;600;700;900&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@200;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --matte-black: #050505;
+      --surface-dark: #111111;
+      --accent-gold: #C5A059;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--matte-black);
+      color: #f0f0f0;
+      letter-spacing: -0.01em;
+    }
+
+    /* Premium Minimal Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-gold);
+    }
+
+    /* Matte Texture Overlays */
+    .matte-overlay {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0) 100%);
+    }
+
+    .luxury-shadow {
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #444 !important;
+    }
+  </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.32.0",
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.1",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.1/client",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.556.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+  <link rel="stylesheet" href="/index.css">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
