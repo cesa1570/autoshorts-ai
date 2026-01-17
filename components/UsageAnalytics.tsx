@@ -2,6 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { Activity, BarChart3, Zap, Coins } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
+// Model Display Names (Human Readable)
+const MODEL_DISPLAY_NAMES: Record<string, string> = {
+    'gemini-3-flash-preview': 'Gemini 3 Flash',
+    'gemini-2.5-flash-preview': 'Gemini 2.5 Flash',
+    'gemini-2.5-flash-image': 'Gemini 2.5 Flash (Image)',
+    'gemini-2.0-flash-preview': 'Gemini 2.0 Flash',
+    'gemini-2.0-flash-exp': 'Gemini 2.0 Flash Exp',
+    'gemini-1.5-flash': 'Gemini 1.5 Flash',
+    'gemini-1.5-pro': 'Gemini 1.5 Pro',
+    'veo-3.1-fast-generate-preview': 'Veo 3.1 Video (Fast)',
+    'veo-2.0-generate-001': 'Veo 2.0 Video',
+    'imagen-3.0-generate-001': 'Imagen 3.0 Image',
+    'gpt-4o': 'GPT-4o (OpenAI)',
+    'gpt-4o-mini': 'GPT-4o Mini (OpenAI)',
+    'dall-e-3': 'DALL-E 3 (OpenAI)',
+    'unknown': 'Unknown Model',
+};
+
+// Gemini API Pricing (USD per 1M tokens) - Source: Google AI Studio 2025
+const MODEL_PRICING: Record<string, { input: number, output: number }> = {
+    'gemini-3-flash-preview': { input: 0.075, output: 0.30 },
+    'gemini-2.5-flash-preview': { input: 0.10, output: 0.40 },
+    'gemini-2.5-flash-image': { input: 0.10, output: 0.40 },
+    'gemini-2.0-flash-preview': { input: 0.10, output: 0.40 },
+    'gemini-2.0-flash-exp': { input: 0.10, output: 0.40 },
+    'gemini-1.5-flash': { input: 0.075, output: 0.30 },
+    'gemini-1.5-pro': { input: 1.25, output: 5.00 },
+    'gpt-4o': { input: 2.50, output: 10.00 },
+    'gpt-4o-mini': { input: 0.15, output: 0.60 },
+    'default': { input: 0.10, output: 0.40 },
+};
+
+const getModelDisplayName = (modelId: string): string => {
+    return MODEL_DISPLAY_NAMES[modelId] || modelId || 'Unknown Model';
+};
+
+const calculateCost = (modelId: string, tokens: number): number => {
+    const pricing = MODEL_PRICING[modelId] || MODEL_PRICING['default'];
+    // Assume 50/50 split between input/output for simplicity
+    const avgRate = (pricing.input + pricing.output) / 2;
+    return (tokens / 1000000) * avgRate;
+};
+
 const UsageAnalytics: React.FC = () => {
     const { userTier, usageHistory } = useApp(); // Removed generic unused imports if any
 
@@ -43,15 +86,8 @@ const UsageAnalytics: React.FC = () => {
                 if (!stats[r.model]) stats[r.model] = { requests: 0, tokens: 0, cost: 0 };
                 stats[r.model].requests++;
                 stats[r.model].tokens += r.tokens;
-                // Use stored cost if available, else estimate
-                if (r.cost !== undefined) {
-                    stats[r.model].cost += r.cost;
-                } else {
-                    // Fallback for old data
-                    let rate = 0.50;
-                    if (r.model.includes('flash')) rate = 0.20;
-                    stats[r.model].cost += (r.tokens / 1000000) * rate;
-                }
+                // Use new calculateCost function for accurate pricing
+                stats[r.model].cost += calculateCost(r.model, r.tokens);
             });
 
             // Convert to array
@@ -89,13 +125,8 @@ const UsageAnalytics: React.FC = () => {
                 stats[r.model].requests++;
                 stats[r.model].tokens += r.tokens;
 
-                if (r.cost !== undefined) {
-                    stats[r.model].cost += r.cost;
-                } else {
-                    let rate = 0.50;
-                    if (r.model.includes('flash')) rate = 0.20;
-                    stats[r.model].cost += (r.tokens / 1000000) * rate;
-                }
+                // Use new calculateCost function for accurate pricing
+                stats[r.model].cost += calculateCost(r.model, r.tokens);
             });
 
             dataPoints = Array.from(map.values());
@@ -229,7 +260,7 @@ const UsageAnalytics: React.FC = () => {
                                         ) : (
                                             Object.entries(modelStats).map(([model, stats]: [string, any]) => (
                                                 <tr key={model} className="hover:bg-white/5 transition-colors">
-                                                    <td className="p-4 text-xs font-bold font-mono text-neutral-300 text-left">{model}</td>
+                                                    <td className="p-4 text-xs font-bold text-neutral-300 text-left">{getModelDisplayName(model)}</td>
                                                     <td className="p-4 text-center text-xs font-mono text-neutral-400">{stats.requests}</td>
                                                     <td className="p-4 text-center text-xs font-mono text-neutral-400">{(stats.tokens / 1000).toFixed(1)}k</td>
                                                     <td className="p-4 text-right text-xs font-mono text-emerald-400">
