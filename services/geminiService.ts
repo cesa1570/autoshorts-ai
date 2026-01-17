@@ -163,7 +163,7 @@ export const generateShortsScript = async (
     PRODUCTION RULES:
     - ONE SCENE PER SENTENCE: Every single independent sentence must be its own scene node.
     - DYNAMIC SCENE COUNT: Generate as many scenes as necessary to cover the topic (usually 8-12 scenes for a 60s short). DO NOT limit to 5.
-    - MAX 10-12 words per scene node for ultra-fast pacing.
+    - MAX 5 words per scene node for ultra-fast pacing.
     - voiceover should feel personal and urgent, use "You" frequently.
     - 'visual_prompt': Use the Visual DNA provided. Describe a SPECIFIC lighting and camera choice unique to this sentence. NO TEXT.
     - 'title': Click-baity, high CTR, using "Why", "How", or "The truth about".`;
@@ -183,7 +183,7 @@ export const generateShortsScript = async (
             hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
             scenes: {
               type: Type.ARRAY,
-              minItems: 5, maxItems: 5,
+              minItems: 3, maxItems: 15,
               items: {
                 type: Type.OBJECT,
                 properties: {

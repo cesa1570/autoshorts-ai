@@ -166,7 +166,7 @@ const SceneCard = memo(({
                 <div className={`w-1.5 h-1.5 rounded-full ${hasVisual ? 'bg-blue-500' : 'bg-neutral-800'}`} title="Visual Status"></div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               {isFailed && <AlertCircle size={14} className="text-red-500" />}
               <button onClick={() => onToggleSkip(scene.id)} className={`p-1.5 rounded-lg transition-colors ${isSkipped ? 'text-red-500' : 'text-neutral-600 hover:text-white hover:bg-white/5'}`}><Film size={16} /></button>
               {onDelete && <button onClick={() => onDelete(scene.id)} className="p-1.5 rounded-lg text-neutral-600 hover:text-red-500 hover:bg-red-500/10 transition-colors"><Trash2 size={16} /></button>}
@@ -332,11 +332,19 @@ const SceneManager: React.FC<SceneManagerProps> = ({
         </div>
         <div className="flex items-center gap-3 relative z-10">
           {onAutoStoryboard && (
-            <button onClick={onAutoStoryboard} className="px-4 py-2 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-600/20 transition-all">AI Storyboard</button>
+            <button
+              onClick={onAutoStoryboard}
+              className="px-6 py-2.5 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg"
+            >
+              AI Storyboard
+            </button>
           )}
           {onAddScene && (
-            <button onClick={onAddScene} className="flex items-center gap-2 px-5 py-2 bg-white/5 text-white border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all shadow-lg">
-              <Plus size={14} /> New Node
+            <button
+              onClick={onAddScene}
+              className="flex items-center gap-2 px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 group"
+            >
+              <Plus size={14} className="group-hover:rotate-90 transition-transform" /> New Node
             </button>
           )}
         </div>

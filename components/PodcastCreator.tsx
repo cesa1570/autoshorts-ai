@@ -426,7 +426,7 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                             <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 relative z-10">
                                 {(script.dialogue || []).map((line, idx) => (
                                     <div key={idx} className={`p-4 rounded-2xl border ${line.speaker === 1 ? 'bg-blue-500/5 border-blue-500/20 ml-0 mr-12' : 'bg-pink-500/5 border-pink-500/20 ml-12 mr-0'}`}>
-                                        <div className="flex items-centerGap-2 mb-2">
+                                        <div className="flex items-center gap-2 mb-2">
                                             <span className={`text-[9px] font-black uppercase tracking-widest ${line.speaker === 1 ? 'text-blue-400' : 'text-pink-400'}`}>
                                                 {line.speaker === 1 ? 'Host A' : 'Host B'}
                                             </span>

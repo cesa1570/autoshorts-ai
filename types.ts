@@ -31,7 +31,7 @@ export interface SubtitleStyle {
   shadowColor?: string;
   shadowBlur?: number;
   fontWeight?: string | number;
-  animation?: 'pop' | 'typewriter' | 'fade' | 'sentence' | 'none';
+  animation?: 'pop' | 'typewriter' | 'fade' | 'sentence' | 'line' | 'word' | 'none';
 }
 
 export interface ScriptData {

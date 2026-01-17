@@ -89,7 +89,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                         <a href="#features" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Features</a>
                         <a href="#roadmap" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Roadmap</a>
                         <a href="#tutorial" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Tutorial</a>
-                        <a href="#download" className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">Download</a>
+                        <button onClick={onLogin} className="text-neutral-400 hover:text-white text-sm font-bold transition-colors">เริ่มใช้งาน</button>
                         <button
                             onClick={onLogin}
                             className="bg-[#C5A059] text-black px-6 py-2 rounded-lg font-black text-sm uppercase tracking-wider hover:bg-[#d4af37] transition-all"
@@ -128,12 +128,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <a
-                            href="#download"
+                        <button
+                            onClick={onLogin}
                             className="bg-[#C5A059] text-black px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-[#d4af37] transition-all shadow-[0_0_40px_rgba(197,160,89,0.3)] flex items-center gap-3"
                         >
-                            <Download size={20} /> FREE DOWNLOAD
-                        </a>
+                            <Sparkles size={20} /> เริ่มใช้งาน
+                        </button>
                         <a
                             href="#tutorial"
                             className="bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-white/10 transition-all flex items-center gap-3"

@@ -27,7 +27,7 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     const [proCount, setProCount] = useState(0);
     const [pendingPurchase, setPendingPurchase] = useState<string | null>(null);
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | null>(null);
-    const { setUserId, setLicenseTier } = useApp();
+    const { setUserId, setLicenseTier, setLicenseExpiresAt } = useApp();
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -57,9 +57,11 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
         if (p) {
             setUserId(p.id);
             setLicenseTier(p.licenseTier);
+            setLicenseExpiresAt(p.licenseExpiresAt);
         } else {
             setUserId(null);
             setLicenseTier('free');
+            setLicenseExpiresAt(null);
         }
 
         setLoading(false);
@@ -299,8 +301,10 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     }
 
     const isLicenseValid = authManagementService.isLicenseValid(profile);
+    const isFreeTier = profile?.licenseTier === 'free';
 
-    if (!isLicenseValid && profile) {
+    // Only block the UI if the user is NOT on the free tier AND their license is invalid (expired)
+    if (!isFreeTier && !isLicenseValid && profile) {
         return (
             <div className="fixed inset-0 bg-[#050505] flex items-center justify-center p-6">
                 <div className="w-full max-w-lg bg-black/60 border border-red-500/20 p-12 rounded-[3.5rem] text-center space-y-8 backdrop-blur-2xl">

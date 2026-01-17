@@ -741,7 +741,24 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
 
           {state.script && (
             <div className="bg-[#0a0a0a] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col ring-1 ring-white/5">
-              <div className="flex border-b border-white/5 bg-black/20 p-2 gap-2">{[{ id: 'script', label: 'Timeline', icon: <Layers size={16} /> }, { id: 'styling', label: 'Aesthetics', icon: <Palette size={16} /> }, { id: 'seo', label: 'Distribution', icon: <BarChart3 size={16} /> }].map(t => (<button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`flex-1 py-5 rounded-2xl flex items-center justify-center gap-3 text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === t.id ? 'bg-[#C5A059] text-black shadow-xl' : 'text-neutral-500 hover:bg-white/5 hover:text-white'}`}>{t.icon} {t.label}</button>))}</div>
+              <div className="flex bg-black/20 p-1.5 rounded-2xl border border-white/5 mx-auto mb-10 w-fit">
+                {[
+                  { id: 'script', label: 'Timeline', icon: <Layers size={14} /> },
+                  { id: 'styling', label: 'Aesthetics', icon: <Type size={14} /> },
+                  { id: 'seo', label: 'Distribution', icon: <BarChart3 size={14} /> }
+                ].map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id as any)}
+                    className={`px-8 py-3 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${activeTab === t.id
+                      ? 'bg-[#C5A059] text-black shadow-lg scale-105'
+                      : 'text-neutral-500 hover:text-white'
+                      } `}
+                  >
+                    {t.icon} {t.label}
+                  </button>
+                ))}
+              </div>
               <div className="p-10 animate-in fade-in duration-500">
                 {activeTab === 'script' && (
                   <div className="space-y-8">

@@ -25,6 +25,8 @@ export interface AppContextType {
   setUserId: (id: string | null) => void;
   licenseTier: 'free' | 'pro' | 'enterprise';
   setLicenseTier: (tier: 'free' | 'pro' | 'enterprise') => void;
+  licenseExpiresAt: number | null;
+  setLicenseExpiresAt: (expiresAt: number | null) => void;
 
   // Vertex AI Support
   vertexProjectId: string;

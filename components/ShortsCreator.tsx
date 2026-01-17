@@ -133,7 +133,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
   const [bgmVolume, setBgmVolume] = useState(0.12);
 
   const [subtitleStyle, setSubtitleStyle] = useState<SubtitleStyle>({
-    fontSize: 84, textColor: '#FFFFFF', backgroundColor: '#000000', backgroundOpacity: 0.0, verticalOffset: 35, fontFamily: 'Kanit', outlineColor: '#000000', outlineWidth: 6, shadowBlur: 4, shadowColor: 'rgba(0,0,0,0.8)', fontWeight: '900'
+    fontSize: 84, textColor: '#FFFFFF', backgroundColor: '#000000', backgroundOpacity: 0.0, verticalOffset: 35, fontFamily: 'Kanit', outlineColor: '#000000', outlineWidth: 6, shadowBlur: 4, shadowColor: 'rgba(0,0,0,0.8)', fontWeight: '900', animation: 'line'
   });
 
   // Hydrate from Draft
@@ -452,7 +452,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
       });
       setCurrentVideoBlob(blob);
 
-      const filename = `lazyautocreator - shorts - ${Date.now()}.mp4`;
+      const filename = `lazyautocreator-shorts-${Date.now()}.mp4`;
 
       if (window.electron) {
         setExportStage('Saving to Desktop...');
@@ -590,7 +590,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
         <div className="mt-12 flex flex-col gap-4 w-full px-4">
           <div className="flex items-center justify-between px-2">
             <span className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-1">Output Quality</span>
-            <div className="w-32">
+            <div className="w-40">
               <CustomDropdown
                 value={exportResolution}
                 onChange={(val) => setExportResolution(val as any)}
@@ -606,7 +606,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
           <button
             onClick={handleExport}
             disabled={totalCount === 0 || isExporting}
-            className={`w - full py - 5 rounded - 2xl font - black uppercase text - [10px] tracking - [0.3em] shadow - 2xl flex items - center justify - center gap - 4 transition - all active: scale - 95 ${completedCount < totalCount ? 'bg-white/5 text-neutral-500 border border-white/5' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'} `}
+            className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-2xl flex items-center justify-center gap-4 transition-all active:scale-95 ${completedCount < totalCount ? 'bg-white/5 text-neutral-500 border border-white/5' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'} `}
           >
             <Download size={18} />
             {completedCount < totalCount ? 'System Standby' : 'Generate Master MP4'}
@@ -680,9 +680,9 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                   {hasGemini && (
                     <button
                       onClick={() => setSelectedProvider('gemini')}
-                      className={`flex - 1 py - 3 rounded - lg flex items - center justify - center gap - 2 text - [10px] font - black uppercase tracking - widest transition - all ${selectedProvider === 'gemini'
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'gemini'
+                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
                         } `}
                     >
                       <Sparkles size={14} /> Gemini 2.0 Flash
@@ -691,9 +691,9 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                   {hasOpenAI && (
                     <button
                       onClick={() => setSelectedProvider('openai')}
-                      className={`flex - 1 py - 3 rounded - lg flex items - center justify - center gap - 2 text - [10px] font - black uppercase tracking - widest transition - all ${selectedProvider === 'openai'
-                          ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
-                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'openai'
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
+                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
                         } `}
                     >
                       <Zap size={14} /> OpenAI GPT-4o
@@ -702,9 +702,9 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                   {hasVertex && (
                     <button
                       onClick={() => setSelectedProvider('vertex')}
-                      className={`flex - 1 py - 3 rounded - lg flex items - center justify - center gap - 2 text - [10px] font - black uppercase tracking - widest transition - all ${selectedProvider === 'vertex'
-                          ? 'bg-[#C5A059] text-black shadow-lg shadow-[#C5A059]/50'
-                          : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
+                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'vertex'
+                        ? 'bg-[#C5A059] text-black shadow-lg shadow-[#C5A059]/50'
+                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
                         } `}
                     >
                       <Sparkles size={14} /> Vertex AI
@@ -785,9 +785,22 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
 
         {state.script && (
           <div className="bg-[#0a0a0a] border border-white/5 rounded-[4rem] overflow-hidden shadow-2xl flex flex-col">
-            <div className="flex border-b border-white/5 bg-black/40 p-3 gap-3">
-              {[{ id: 'scenes', label: 'Timeline', icon: <Layers size={16} /> }, { id: 'viral', label: 'Aesthetics', icon: <Type size={16} /> }, { id: 'seo', label: 'Distribution', icon: <BarChart3 size={16} /> }].map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`flex - 1 py - 5 rounded - [2rem] flex items - center justify - center gap - 4 text - [11px] font - black uppercase tracking - [0.3em] transition - all duration - 500 ${activeTab === t.id ? 'bg-[#C5A059] text-black shadow-2xl' : 'text-neutral-500 hover:bg-white/5 hover:text-white'} `}>{t.icon} {t.label}</button>
+            <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mx-auto mb-10 w-fit">
+              {[
+                { id: 'scenes', label: 'Timeline', icon: <Layers size={14} /> },
+                { id: 'viral', label: 'Aesthetics', icon: <Type size={14} /> },
+                { id: 'seo', label: 'Distribution', icon: <BarChart3 size={14} /> }
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setActiveTab(t.id as any)}
+                  className={`px-8 py-3 rounded-xl flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${activeTab === t.id
+                    ? 'bg-[#C5A059] text-black shadow-lg scale-105'
+                    : 'text-neutral-500 hover:text-white'
+                    } `}
+                >
+                  {t.icon} {t.label}
+                </button>
               ))}
             </div>
             <div className="p-12">
@@ -815,7 +828,7 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
                           <option value="all">ALL</option>
                         </select>
                       </div>
-                      <button onClick={handleGenerateAll} disabled={isProcessingAll} className={`px - 12 py - 5 rounded - 2xl text - [11px] font - black uppercase tracking - [0.3em] transition - all shadow - 2xl flex items - center gap - 4 active: scale - 95 ${isProcessingAll ? 'bg-white/10 text-white animate-pulse' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'} `}>
+                      <button onClick={handleGenerateAll} disabled={isProcessingAll} className={`px-12 py-5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-2xl flex items-center gap-4 active:scale-95 ${isProcessingAll ? 'bg-white/10 text-white animate-pulse' : 'bg-[#C5A059] text-black hover:bg-[#d4af37]'} `}>
                         {isProcessingAll ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                         {isProcessingAll ? 'Processing Cluster' : 'Initialize All Nodes'}
                       </button>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Video, Zap, Clapperboard, Grid, Key, Shield, Settings as SettingsIcon, Activity, Mic, Share2, User
+  Video, Zap, Clapperboard, Grid, Key, Shield, Settings as SettingsIcon, Activity, Mic, Share2, User, Clock
 } from 'lucide-react';
 import TitleBar from './components/TitleBar';
 
@@ -58,6 +58,7 @@ const App: React.FC = () => {
 
   const [userId, setUserId] = useState<string | null>(null);
   const [licenseTier, setLicenseTier] = useState<'free' | 'pro' | 'enterprise'>('free');
+  const [licenseExpiresAt, setLicenseExpiresAt] = useState<number | null>(null);
 
   const [vertexProjectId, setVertexProjectId] = useState(() => localStorage.getItem('vertex_project_id') || '');
   const [vertexLocation, setVertexLocation] = useState(() => localStorage.getItem('vertex_location') || 'us-central1');
@@ -229,19 +230,25 @@ const App: React.FC = () => {
   const NavItem = ({ id, label, icon: Icon }: { id: any, label: string, icon: any }) => (
     <button
       onClick={() => handleNavigate(id)}
-      className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-6'} py-4 rounded-2xl font-bold transition-all duration-300 text-[10px] tracking-[0.2em] uppercase group relative overflow-hidden ${activeTab === id
+      className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-6'} py-4 rounded-3xl font-bold transition-all duration-500 text-[10px] tracking-[0.2em] uppercase group relative overflow-hidden ${activeTab === id
         ? 'text-white'
-        : 'text-neutral-500 hover:text-neutral-200'
+        : 'text-neutral-500 hover:bg-white/[0.02] hover:text-neutral-300'
         }`}
     >
       {activeTab === id && (
-        <div className="absolute inset-0 bg-gradient-to-r from-[#C5A059]/20 to-transparent border-l-2 border-[#C5A059] animate-in fade-in slide-in-from-left-4 duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#C5A059]/15 via-[#C5A059]/5 to-transparent border-l-[3px] border-[#C5A059] shadow-[inset_10px_0_20px_rgba(197,160,89,0.05)] animate-in fade-in slide-in-from-left-4 duration-700" />
       )}
-      <div className={`flex items-center ${isSidebarCollapsed ? 'gap-0' : 'gap-4'} relative z-10 transition-all duration-300`}>
-        <Icon size={16} strokeWidth={activeTab === id ? 2.5 : 1.5} className={`transition-colors duration-300 ${activeTab === id ? 'text-[#C5A059] drop-shadow-[0_0_8px_rgba(197,160,89,0.5)]' : 'text-neutral-600 group-hover:text-neutral-400'}`} />
-        {!isSidebarCollapsed && <span className="animate-in fade-in slide-in-from-right-2 duration-300">{label}</span>}
+      <div className={`flex items-center ${isSidebarCollapsed ? 'gap-0' : 'gap-5'} relative z-10 transition-all duration-300`}>
+        <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 ${activeTab === id ? 'bg-[#C5A059]/10 shadow-[0_0_15px_rgba(197,160,89,0.2)]' : 'group-hover:bg-white/5'}`}>
+          <Icon size={18} strokeWidth={activeTab === id ? 2.5 : 2} className={`transition-all duration-500 ${activeTab === id ? 'text-[#C5A059] scale-110' : 'text-neutral-700 group-hover:text-neutral-400'}`} />
+        </div>
+        {!isSidebarCollapsed && <span className={`animate-in fade-in slide-in-from-right-2 duration-500 tracking-[0.3em] ${activeTab === id ? 'font-black' : 'font-bold'}`}>{label}</span>}
       </div>
-      {!isSidebarCollapsed && activeTab === id && <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] shadow-[0_0_10px_#C5A059] relative z-10" />}
+      {!isSidebarCollapsed && activeTab === id && (
+        <div className="flex items-center gap-2 relative z-10">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] shadow-[0_0_12px_#C5A059] animate-pulse" />
+        </div>
+      )}
     </button>
   );
 
@@ -292,6 +299,8 @@ const App: React.FC = () => {
     setUserId,
     licenseTier,
     setLicenseTier,
+    licenseExpiresAt,
+    setLicenseExpiresAt,
     vertexProjectId,
     setVertexProjectId: (id: string) => { setVertexProjectId(id); localStorage.setItem('vertex_project_id', id); },
     vertexLocation,
@@ -315,25 +324,25 @@ const App: React.FC = () => {
             <div className={`flex h-screen ${typeof window !== 'undefined' && window.electron ? 'pt-[30px]' : ''}`}>
 
               <aside className={`hidden md:flex flex-col fixed inset-y-0 z-50 bg-[#080808]/80 backdrop-blur-3xl border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-24 p-4' : 'w-72 p-8'}`}>
-                <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-4'} mb-16 mt-4 ml-2 group cursor-pointer transition-all duration-300`} onClick={toggleSidebar}>
+                <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'gap-5'} mb-20 mt-6 ml-1 group cursor-pointer transition-all duration-500`} onClick={toggleSidebar}>
                   <div className="relative">
-                    <div className="absolute inset-0 bg-[#C5A059] blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
-                    <div className="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-[#C5A059] to-[#8a6d3b] flex items-center justify-center shadow-2xl border border-white/10 group-hover:scale-110 transition-transform">
-                      <Shield className="text-black" size={22} />
+                    <div className="absolute inset-0 bg-[#C5A059] blur-2xl opacity-10 group-hover:opacity-30 transition-opacity" />
+                    <div className="relative w-14 h-14 rounded-[1.2rem] bg-gradient-to-br from-[#C5A059] to-[#8a6d3b] flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.5),offset_0_0_0_1px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-all duration-500 hover:shadow-[0_0_30px_rgba(197,160,89,0.3)]">
+                      <Shield className="text-black" size={28} strokeWidth={2.5} />
                     </div>
                   </div>
                   {!isSidebarCollapsed && (
-                    <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-                      <h1 className="text-xl font-black text-white tracking-tighter leading-none uppercase italic">LazyAuto</h1>
-                      <span className="text-[8px] text-[#C5A059] font-black tracking-[0.4em] uppercase opacity-80">LazyAutoCreator v3.0</span>
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                      <h1 className="text-2xl font-black text-white tracking-[0.1em] leading-none uppercase italic drop-shadow-lg">LAZYAUTO</h1>
+                      <span className="text-[7px] text-[#C5A059] font-black tracking-[0.5em] uppercase opacity-90 block mt-1">LAZYAUTOCREATOR V3.0</span>
                     </div>
                   )}
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                  <div className={`px-6 flex items-center gap-2 mb-6 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                    {!isSidebarCollapsed && <p className="text-[8px] font-black text-neutral-700 uppercase tracking-[0.5em] whitespace-nowrap animate-in fade-in">Production</p>}
-                    {!isSidebarCollapsed && <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/5 to-transparent" />}
+                  <div className={`px-6 flex items-center gap-4 mb-8 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                    <div className="h-px flex-1 bg-white/[0.03]" />
+                    {!isSidebarCollapsed && <p className="text-[9px] font-bold text-neutral-800 uppercase tracking-[0.6em] whitespace-nowrap animate-in fade-in duration-700">Production</p>}
+                    {!isSidebarCollapsed && <div className="h-px flex-1 bg-white/[0.03]" />}
                   </div>
 
                   <NavItem id="hub" label="Main Lobby" icon={Grid} />
@@ -356,6 +365,25 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="pt-10 border-t border-white/5 space-y-2">
+                  {!isSidebarCollapsed && (
+                    <div className="mx-6 mb-6 p-4 rounded-2xl bg-gradient-to-br from-[#C5A059]/10 to-transparent border border-[#C5A059]/20 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 transition-opacity">
+                        <Shield size={24} className="text-[#C5A059]" />
+                      </div>
+                      <div className="relative z-10">
+                        <div className="text-[8px] font-black text-[#C5A059] uppercase tracking-[0.3em] mb-1">Authorization Status</div>
+                        <div className="text-sm font-black text-white uppercase tracking-tight mb-2">
+                          {licenseTier === 'enterprise' ? 'Enterprise Identity' : licenseTier === 'pro' ? 'Cinema Pro' : 'Free Operator'}
+                        </div>
+                        <div className="text-[9px] text-neutral-500 font-bold uppercase tracking-widest flex items-center gap-1.5">
+                          <Clock size={10} />
+                          {licenseTier === 'free' ? 'Standard Access' :
+                            licenseExpiresAt ? `Expires: ${new Date(licenseExpiresAt).toLocaleDateString()}` :
+                              'Lifetime Access'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <NavItem id="profile" label="My Profile" icon={User} />
                 </div>
               </aside>
