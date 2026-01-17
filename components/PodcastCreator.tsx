@@ -19,6 +19,8 @@ import PricingModal from './PricingModal';
 interface PodcastLine {
     speaker: 1 | 2;
     text: string;
+    emotion?: 'happy' | 'sad' | 'sarcastic' | 'excited' | 'neutral' | 'angry' | 'curious';
+    hostName?: string;
 }
 
 interface PodcastScript {
@@ -32,6 +34,15 @@ interface PodcastCreatorProps {
     initialDraft?: Draft | null;
     isActive?: boolean;
 }
+
+// Podcast Style Templates
+const PODCAST_STYLES = [
+    { id: 'interview', name: 'Interview', description: 'Host asks questions, Guest answers', icon: '🎤' },
+    { id: 'debate', name: 'Debate', description: 'Two opposing viewpoints', icon: '⚔️' },
+    { id: 'storytelling', name: 'Storytelling', description: 'Narrative story with dramatic pauses', icon: '📖' },
+    { id: 'news', name: 'News Broadcast', description: 'Formal, informative tone', icon: '📺' },
+    { id: 'casual', name: 'Casual Chat', description: 'Friendly conversation between friends', icon: '☕' },
+];
 
 const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive }) => {
     const { resetKeyStatus, licenseTier, apiKeys, openaiApiKey, userId, vertexProjectId, vertexLocation, vertexServiceKey, vertexApiKey } = useApp();
@@ -62,10 +73,23 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
     const [isGeneratingScript, setIsGeneratingScript] = useState(false);
     const [script, setScript] = useState<PodcastScript | null>(null);
 
+    // Host Settings
+    const [host1Name, setHost1Name] = useState('Host A');
+    const [host2Name, setHost2Name] = useState('Host B');
     const [guest1Voice, setGuest1Voice] = useState('Kore');
     const [guest2Voice, setGuest2Voice] = useState('Fenrir');
     const [selectedVisualModel, setSelectedVisualModel] = useState(availableVisualModels[0]?.id || VISUAL_MODELS[0].id);
     const [selectedTextModel, setSelectedTextModel] = useState(availableTextModels[0]?.id || TEXT_MODELS[0].id);
+
+    // Podcast Style
+    const [podcastStyle, setPodcastStyle] = useState('casual');
+
+    // Background Music
+    const [bgmFile, setBgmFile] = useState<File | null>(null);
+    const [bgmUrl, setBgmUrl] = useState<string | undefined>(undefined);
+    const [bgmVolume, setBgmVolume] = useState(0.15);
+    const [introFile, setIntroFile] = useState<File | null>(null);
+    const [outroFile, setOutroFile] = useState<File | null>(null);
 
     const [isSynthesizing, setIsSynthesizing] = useState(false);
     const [scenes, setScenes] = useState<any[]>([]);
@@ -81,6 +105,15 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
     const [showHandoffModal, setShowHandoffModal] = useState(false);
     const [showPricingModal, setShowPricingModal] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+    // BGM URL Effect
+    React.useEffect(() => {
+        if (bgmFile && !bgmUrl) {
+            const url = URL.createObjectURL(bgmFile);
+            setBgmUrl(url);
+            return () => URL.revokeObjectURL(url);
+        }
+    }, [bgmFile]);
 
     // Hydrate
     const hydrateScenes = async (scenes: any[]) => {
@@ -172,7 +205,11 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
             };
 
             const result = await unifiedGenerateScript(topic, selectedTextModel, config, {
-                language
+                language,
+                mode: 'podcast',
+                podcastStyle,
+                host1Name,
+                host2Name
             });
             setScript(result);
             saveDraft(result);
@@ -346,6 +383,98 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                             </div>
                         </div>
 
+                        {/* Style Template Selector */}
+                        <div className="bg-black/40 border border-white/10 p-5 rounded-2xl space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400">📋</div>
+                                <div>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 block">Podcast Style</span>
+                                    <span className="text-xs font-bold text-white">Template</span>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-5 gap-2">
+                                {PODCAST_STYLES.map(style => (
+                                    <button
+                                        key={style.id}
+                                        onClick={() => setPodcastStyle(style.id)}
+                                        className={`p-3 rounded-xl text-center transition-all ${podcastStyle === style.id
+                                            ? 'bg-[#C5A059]/20 border border-[#C5A059] text-[#C5A059]'
+                                            : 'bg-black/40 border border-white/5 text-neutral-400 hover:border-white/20'}`}
+                                    >
+                                        <span className="text-xl block mb-1">{style.icon}</span>
+                                        <span className="text-[9px] font-black uppercase tracking-widest">{style.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Custom Host Names */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
+                                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2 mb-2"><User size={12} className="text-blue-400" /> Host 1 Name</label>
+                                <input
+                                    type="text"
+                                    value={host1Name}
+                                    onChange={(e) => setHost1Name(e.target.value)}
+                                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-2 text-white text-sm font-bold outline-none focus:border-[#C5A059] transition-all"
+                                    placeholder="Host A"
+                                />
+                            </div>
+                            <div className="bg-black/40 border border-white/10 p-4 rounded-2xl">
+                                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-2 mb-2"><User size={12} className="text-pink-400" /> Host 2 Name</label>
+                                <input
+                                    type="text"
+                                    value={host2Name}
+                                    onChange={(e) => setHost2Name(e.target.value)}
+                                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-2 text-white text-sm font-bold outline-none focus:border-[#C5A059] transition-all"
+                                    placeholder="Host B"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Audio Controls */}
+                        <div className="bg-black/40 border border-white/10 p-5 rounded-2xl space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400">🎵</div>
+                                    <div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 block">Audio Production</span>
+                                        <span className="text-xs font-bold text-white">BGM & Jingles</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label className="text-[8px] font-black text-neutral-600 uppercase tracking-widest block mb-2">Intro Jingle</label>
+                                    <input type="file" accept="audio/*" onChange={(e) => setIntroFile(e.target.files?.[0] || null)} className="hidden" id="intro-up" />
+                                    <label htmlFor="intro-up" className={`w-full py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 ${introFile ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black border border-white/10 text-neutral-500 hover:text-white hover:border-white/20'}`}>
+                                        {introFile ? '✓ Loaded' : '+ Upload'}
+                                    </label>
+                                </div>
+                                <div>
+                                    <label className="text-[8px] font-black text-neutral-600 uppercase tracking-widest block mb-2">Background Music</label>
+                                    <input type="file" accept="audio/*" onChange={(e) => setBgmFile(e.target.files?.[0] || null)} className="hidden" id="bgm-up" />
+                                    <label htmlFor="bgm-up" className={`w-full py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 ${bgmFile ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black border border-white/10 text-neutral-500 hover:text-white hover:border-white/20'}`}>
+                                        {bgmFile ? '✓ Loaded' : '+ Upload'}
+                                    </label>
+                                </div>
+                                <div>
+                                    <label className="text-[8px] font-black text-neutral-600 uppercase tracking-widest block mb-2">Outro Jingle</label>
+                                    <input type="file" accept="audio/*" onChange={(e) => setOutroFile(e.target.files?.[0] || null)} className="hidden" id="outro-up" />
+                                    <label htmlFor="outro-up" className={`w-full py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest cursor-pointer transition-all flex items-center justify-center gap-2 ${outroFile ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-black border border-white/10 text-neutral-500 hover:text-white hover:border-white/20'}`}>
+                                        {outroFile ? '✓ Loaded' : '+ Upload'}
+                                    </label>
+                                </div>
+                            </div>
+                            {bgmFile && (
+                                <div className="flex items-center gap-4">
+                                    <span className="text-[9px] font-black text-neutral-600 uppercase tracking-widest">BGM Volume</span>
+                                    <input type="range" min="0" max="0.5" step="0.01" value={bgmVolume} onChange={(e) => setBgmVolume(parseFloat(e.target.value))} className="flex-1 accent-[#C5A059] h-1 bg-neutral-900 rounded-full appearance-none cursor-pointer" />
+                                    <span className="text-[10px] font-black text-[#C5A059] w-10 text-right">{Math.round(bgmVolume * 100)}%</span>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Model Settings */}
                         <div className="bg-black/40 border border-white/10 p-5 rounded-2xl flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -424,16 +553,35 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                             </div>
 
                             <div className="space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar pr-2 relative z-10">
-                                {(script.dialogue || []).map((line, idx) => (
-                                    <div key={idx} className={`p-4 rounded-2xl border ${line.speaker === 1 ? 'bg-blue-500/5 border-blue-500/20 ml-0 mr-12' : 'bg-pink-500/5 border-pink-500/20 ml-12 mr-0'}`}>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className={`text-[9px] font-black uppercase tracking-widest ${line.speaker === 1 ? 'text-blue-400' : 'text-pink-400'}`}>
-                                                {line.speaker === 1 ? 'Host A' : 'Host B'}
-                                            </span>
+                                {(script.dialogue || []).map((line, idx) => {
+                                    const emotionColors: Record<string, string> = {
+                                        happy: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+                                        sad: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                                        sarcastic: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+                                        excited: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+                                        neutral: 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30',
+                                        angry: 'bg-red-500/20 text-red-400 border-red-500/30',
+                                        curious: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+                                    };
+                                    const emotionEmoji: Record<string, string> = {
+                                        happy: '😊', sad: '😢', sarcastic: '😏', excited: '🤩', neutral: '😐', angry: '😠', curious: '🤔'
+                                    };
+                                    return (
+                                        <div key={idx} className={`p-4 rounded-2xl border ${line.speaker === 1 ? 'bg-blue-500/5 border-blue-500/20 ml-0 mr-12' : 'bg-pink-500/5 border-pink-500/20 ml-12 mr-0'}`}>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${line.speaker === 1 ? 'text-blue-400' : 'text-pink-400'}`}>
+                                                    {line.hostName || (line.speaker === 1 ? host1Name : host2Name)}
+                                                </span>
+                                                {line.emotion && (
+                                                    <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${emotionColors[line.emotion] || emotionColors.neutral}`}>
+                                                        {emotionEmoji[line.emotion] || '😐'} {line.emotion}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-neutral-300 font-kanit text-sm leading-relaxed">{line.text}</p>
                                         </div>
-                                        <p className="text-neutral-300 font-kanit text-sm leading-relaxed">{line.text}</p>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )}

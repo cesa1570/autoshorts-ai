@@ -50,6 +50,19 @@ export const unifiedGenerateScript = async (
         return await generateLongVideoScript(topic, '16:9', options.language, options.duration, options.selectedStyle || options.mode, modelId);
     }
 
+    // Route to Podcast Script if mode is 'podcast'
+    if (options.mode === 'podcast') {
+        console.log('[unifiedAiService] Using generatePodcastScript with style:', options.podcastStyle);
+        const { generatePodcastScriptAdvanced } = await import('./geminiService');
+        return await generatePodcastScriptAdvanced(topic, {
+            style: options.podcastStyle || 'casual',
+            host1Name: options.host1Name || 'Host A',
+            host2Name: options.host2Name || 'Host B',
+            language: options.language || 'Auto',
+            modelId
+        });
+    }
+
     // Otherwise use Shorts Script (quick viral content)
     console.log('[unifiedAiService] Using generateShortsScript');
     return await generateShortsScript(topic, options.mode, options.aspectRatio, options.language, options.selectedStyle, modelId);

@@ -395,6 +395,61 @@ export const generatePodcastScript = async (topic: string, language: string = 'A
   });
 };
 
+// Advanced Podcast Script Generator with Style Templates, Custom Host Names, and Emotion Tags
+const PODCAST_STYLE_PROMPTS: Record<string, string> = {
+  'interview': `Format: Classic interview format. Host 1 is the interviewer asking probing questions. Host 2 is the expert guest providing insightful answers. Maintain a professional yet engaging tone.`,
+  'debate': `Format: Balanced debate format. Host 1 argues FOR the topic. Host 2 argues AGAINST. Include rebuttals, counterpoints, and passionate exchanges while remaining respectful.`,
+  'storytelling': `Format: Narrative storytelling. Host 1 is the primary storyteller with dramatic delivery. Host 2 adds commentary, asks clarifying questions, and reacts emotionally to the story.`,
+  'news': `Format: News broadcast style. Host 1 is the anchor presenting facts formally. Host 2 is the field correspondent or analyst providing deeper context. Use professional, authoritative language.`,
+  'casual': `Format: Casual friendly chat. Both hosts are equals having a relaxed conversation. Include jokes, personal anecdotes, and natural interruptions. Keep it fun and relatable.`
+};
+
+export interface PodcastScriptOptions {
+  style: string;
+  host1Name: string;
+  host2Name: string;
+  language: string;
+  modelId?: string;
+}
+
+export const generatePodcastScriptAdvanced = async (topic: string, options: PodcastScriptOptions): Promise<any> => {
+  const { style, host1Name, host2Name, language, modelId } = options;
+  const stylePrompt = PODCAST_STYLE_PROMPTS[style] || PODCAST_STYLE_PROMPTS['casual'];
+  const model = modelId || 'gemini-3-flash-preview';
+
+  return withRetry(async () => {
+    const ai = getClient();
+    const response = await ai.models.generateContent({
+      model,
+      contents: `You are an expert podcast scriptwriter. Create a compelling podcast script about "${topic}".
+
+HOST CONFIGURATION:
+- Host 1 Name: "${host1Name}"
+- Host 2 Name: "${host2Name}"
+
+STYLE REQUIREMENTS:
+${stylePrompt}
+
+LANGUAGE: ${language === 'Auto' ? 'Use the same language as the topic' : language}
+
+EMOTION TAGS: For each line, include an emotion tag from: happy, sad, sarcastic, excited, neutral, angry, curious
+
+Generate 10-15 dialogue exchanges. Make it engaging and viral-worthy.
+
+OUTPUT FORMAT (JSON):
+{
+  "title": "Catchy podcast episode title",
+  "dialogue": [
+    { "speaker": 1, "text": "dialogue line", "emotion": "excited", "hostName": "${host1Name}" },
+    { "speaker": 2, "text": "dialogue line", "emotion": "curious", "hostName": "${host2Name}" }
+  ]
+}`,
+      config: { responseMimeType: "application/json" }
+    });
+    return safeParseJson(response.text || '{}');
+  });
+};
+
 export const generatePodcastImage = async (style: string = 'Cinematic', model?: string): Promise<string> => {
   return generateImageForScene("Professional podcast studio, neon lighting, depth of field", model || 'gemini-2.5-flash-image', '16:9', style);
 };
