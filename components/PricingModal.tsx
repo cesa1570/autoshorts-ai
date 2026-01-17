@@ -43,7 +43,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ onClose, currentTier }) => 
     const PLANS = [
         {
             id: 'early_bird',
-            priceId: 'price_1SqCAaChLIAUz0sEi5uzftfQ', // $19 Yearly
+            priceId: 'price_1SqX0KChLIAUz0sEKWMPY7X1', // $19 Yearly (TEST MODE)
             name: 'EARLY BIRD',
             price: '$19',
             period: '/YR',
