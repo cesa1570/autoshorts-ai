@@ -465,7 +465,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                         <button className="hover:text-[#C5A059] transition-colors">Contact Support</button>
                     </div>
                     <div className="text-xs text-neutral-700 font-mono">
-                        VERSION 2.0.4 [BETA]
+                        VERSION 0 [BETA]
                     </div>
                 </div>
             </footer >
