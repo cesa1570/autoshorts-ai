@@ -360,6 +360,14 @@ const App: React.FC = () => {
 
                   <NavItem id="social" label="Social Hub" icon={Share2} />
 
+                  {/* ADMIN ONLY DASHBOARD */}
+                  {userEmail?.toLowerCase().trim() === 'callmetrapboi1@gmail.com' && (
+                    <div className="mt-8 border-t border-white/5 pt-4">
+                      {!isSidebarCollapsed && <p className="text-[9px] font-bold text-[#C5A059] uppercase tracking-[0.6em] whitespace-nowrap mb-4 px-6 animate-in fade-in">Founder</p>}
+                      <NavItem id="admin" label="Mission Control" icon={Shield} />
+                    </div>
+                  )}
+
                   <div className="my-10 px-6">
                     <div className="h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                   </div>
@@ -434,6 +442,7 @@ const App: React.FC = () => {
                     </div>
                     {activeTab === 'social' && <SocialHub />}
                     {activeTab === 'profile' && <UserProfile />}
+                    {activeTab === 'admin' && <AdminDashboard />}
                     {activeTab === 'analytics' && <UsageAnalytics />}
                     {activeTab === 'settings' && <Settings />}
                   </div>
