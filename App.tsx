@@ -15,6 +15,7 @@ import UsageAnalytics from './components/UsageAnalytics';
 import SocialHub from './components/SocialHub';
 import UserProfile from './components/UserProfile';
 import AuthGate from './components/AuthGate';
+import AdminDashboard from './components/AdminDashboard';
 import { authManagementService } from './services/authManagementService';
 
 import { AutomationProvider } from './contexts/AutomationContext';
@@ -24,7 +25,7 @@ import { handleAuthCallback } from './services/authService';
 import { Draft } from './types';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'hub' | 'create' | 'long' | 'podcast' | 'settings' | 'analytics' | 'social' | 'profile'>('hub');
+  const [activeTab, setActiveTab] = useState<'hub' | 'create' | 'long' | 'podcast' | 'settings' | 'analytics' | 'social' | 'profile' | 'admin'>('hub');
   const [currentDraft, setCurrentDraft] = useState<Draft | null>(null);
 
   const [selectedTopic, setSelectedTopic] = useState<string>('');
@@ -57,6 +58,7 @@ const App: React.FC = () => {
   const [usageHistory, setUsageHistory] = useState<any[]>([]); // UsageRecord[]
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [licenseTier, setLicenseTier] = useState<'free' | 'pro' | 'enterprise'>('free');
   const [licenseExpiresAt, setLicenseExpiresAt] = useState<number | null>(null);
 
@@ -297,6 +299,8 @@ const App: React.FC = () => {
     setOpenaiApiKey: handleSetOpenaiApiKey,
     userId,
     setUserId,
+    userEmail,
+    setUserEmail,
     licenseTier,
     setLicenseTier,
     licenseExpiresAt,

@@ -27,7 +27,7 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
     const [proCount, setProCount] = useState(0);
     const [pendingPurchase, setPendingPurchase] = useState<string | null>(null);
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | null>(null);
-    const { setUserId, setLicenseTier, setLicenseExpiresAt } = useApp();
+    const { setUserId, setUserEmail, setLicenseTier, setLicenseExpiresAt } = useApp();
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -56,10 +56,12 @@ const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
         // Sync with App Context
         if (p) {
             setUserId(p.id);
+            setUserEmail(p.email);
             setLicenseTier(p.licenseTier);
             setLicenseExpiresAt(p.licenseExpiresAt);
         } else {
             setUserId(null);
+            setUserEmail(null);
             setLicenseTier('free');
             setLicenseExpiresAt(null);
         }

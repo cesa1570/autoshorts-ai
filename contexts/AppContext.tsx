@@ -23,6 +23,8 @@ export interface AppContextType {
   // Auth & License Support
   userId: string | null;
   setUserId: (id: string | null) => void;
+  userEmail: string | null;
+  setUserEmail: (email: string | null) => void;
   licenseTier: 'free' | 'pro' | 'enterprise';
   setLicenseTier: (tier: 'free' | 'pro' | 'enterprise') => void;
   licenseExpiresAt: number | null;
