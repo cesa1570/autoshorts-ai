@@ -21,7 +21,7 @@ const MODEL_DISPLAY_NAMES: Record<string, string> = {
 };
 
 // Gemini API Pricing (USD per 1M tokens) - Source: Google AI Studio 2025
-const MODEL_PRICING: Record<string, { input: number, output: number }> = {
+export const MODEL_PRICING: Record<string, { input: number, output: number }> = {
     'gemini-3-flash-preview': { input: 0.075, output: 0.30 },
     'gemini-2.5-flash-preview': { input: 0.10, output: 0.40 },
     'gemini-2.5-flash-image': { input: 0.10, output: 0.40 },

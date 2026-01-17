@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Mic, Radio, Play, Sparkles, Loader2, Download, MessageCircle, User, Users, Image as ImageIcon, Zap, Share2, Smartphone, Trash2 } from 'lucide-react';
+import { Mic, Radio, Play, Sparkles, Loader2, Download, MessageCircle, User, Users, Image as ImageIcon, Zap, Share2, Smartphone, Trash2, Volume2 } from 'lucide-react';
 import MobileHandoffModal from './MobileHandoffModal';
 import { generatePodcastScript, generatePodcastImage, generateVoiceover } from '../services/geminiService';
 import { generateScriptWithOpenAI, generateAudioWithOpenAI } from '../services/openaiService';
@@ -15,6 +15,48 @@ import { Draft } from '../types';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
 import PricingModal from './PricingModal';
+
+// Helper function to convert AudioBuffer to WAV Blob
+const audioBufferToWav = (buffer: AudioBuffer): Blob => {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const format = 1; // PCM
+    const bitDepth = 16;
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numChannels * bytesPerSample;
+    const dataLength = buffer.length * blockAlign;
+    const arrayBuffer = new ArrayBuffer(44 + dataLength);
+    const view = new DataView(arrayBuffer);
+
+    // RIFF header
+    const writeString = (offset: number, str: string) => {
+        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, format, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataLength, true);
+
+    // Write audio data
+    let offset = 44;
+    for (let i = 0; i < buffer.length; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+            const sample = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+            offset += 2;
+        }
+    }
+    return new Blob([arrayBuffer], { type: 'audio/wav' });
+};
 
 interface PodcastLine {
     speaker: 1 | 2;
@@ -227,11 +269,11 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
         setProgress('Initializing Studio...');
 
         try {
-            // 1. Generate Image if needed
+            // 1. Generate Image based on topic
             let imageUrl = studioImage;
             if (!imageUrl) {
                 setProgress('Designing Studio Environment...');
-                imageUrl = await generatePodcastImage('Cinematic', selectedVisualModel);
+                imageUrl = await generatePodcastImage('Cinematic', selectedVisualModel, topic);
                 setStudioImage(imageUrl);
             }
 
@@ -634,31 +676,66 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                             </button>
 
                             {scenes.length > 0 && (
-                                <button
-                                    onClick={async () => {
-                                        if (!playerRef.current) return;
-                                        const filename = `podcast-${Date.now()}.mp4`;
-                                        try {
-                                            const { blob } = await playerRef.current.renderVideo(undefined, { resolution: '1080p', bitrate: 8000000 });
-                                            if (window.electron) {
-                                                const arrayBuffer = await blob.arrayBuffer();
-                                                const result = await window.electron.video.saveVideo(arrayBuffer, filename);
-                                                if (result.success) alert(`Saved to: ${result.path}`);
-                                            } else {
-                                                const url = URL.createObjectURL(blob);
-                                                const a = document.createElement('a');
-                                                a.href = url;
-                                                a.download = filename;
-                                                a.click();
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Audio Export */}
+                                    <button
+                                        onClick={async () => {
+                                            // Combine all audio buffers into one
+                                            const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+                                            const totalDuration = scenes.reduce((acc, s) => acc + (s.audioBuffer?.duration || 0), 0);
+                                            const offlineCtx = new OfflineAudioContext(1, audioCtx.sampleRate * totalDuration, audioCtx.sampleRate);
+
+                                            let offset = 0;
+                                            for (const scene of scenes) {
+                                                if (scene.audioBuffer) {
+                                                    const source = offlineCtx.createBufferSource();
+                                                    source.buffer = scene.audioBuffer;
+                                                    source.connect(offlineCtx.destination);
+                                                    source.start(offset);
+                                                    offset += scene.audioBuffer.duration;
+                                                }
                                             }
-                                        } catch (e: any) {
-                                            alert("Export Failed: " + e.message);
-                                        }
-                                    }}
-                                    className="w-full py-5 bg-[#C5A059] text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-[#d4af37] shadow-lg active:scale-95 flex items-center justify-center gap-3"
-                                >
-                                    <Download size={16} /> Export Video (1080p)
-                                </button>
+
+                                            const renderedBuffer = await offlineCtx.startRendering();
+                                            const wavBlob = audioBufferToWav(renderedBuffer);
+                                            const url = URL.createObjectURL(wavBlob);
+                                            const a = document.createElement('a');
+                                            a.href = url;
+                                            a.download = `podcast-audio-${Date.now()}.wav`;
+                                            a.click();
+                                        }}
+                                        className="py-4 bg-purple-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-purple-500 shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <Volume2 size={14} /> Audio Only
+                                    </button>
+
+                                    {/* Video Export */}
+                                    <button
+                                        onClick={async () => {
+                                            if (!playerRef.current) return;
+                                            const filename = `podcast-${Date.now()}.mp4`;
+                                            try {
+                                                const { blob } = await playerRef.current.renderVideo(undefined, { resolution: '1080p', bitrate: 8000000 });
+                                                if (window.electron) {
+                                                    const arrayBuffer = await blob.arrayBuffer();
+                                                    const result = await window.electron.video.saveVideo(arrayBuffer, filename);
+                                                    if (result.success) alert(`Saved to: ${result.path}`);
+                                                } else {
+                                                    const url = URL.createObjectURL(blob);
+                                                    const a = document.createElement('a');
+                                                    a.href = url;
+                                                    a.download = filename;
+                                                    a.click();
+                                                }
+                                            } catch (e: any) {
+                                                alert("Export Failed: " + e.message);
+                                            }
+                                        }}
+                                        className="py-4 bg-[#C5A059] text-black rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-[#d4af37] shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <Download size={14} /> Video 1080p
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>

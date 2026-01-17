@@ -1,11 +1,39 @@
 
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { ScriptData, GeneratorMode, NewsItem, SocialPostData, PolishStyle, Scene } from "../types";
+import { MODEL_PRICING } from "../components/UsageAnalytics";
 
 export const ERR_INVALID_KEY = "API_KEY_INVALID";
 
-export const notifyApiUsage = (usageAmount: number = 0, modelId: string = '', details: any = {}) => {
-  window.dispatchEvent(new CustomEvent('gemini-api-usage', { detail: { usageAmount, modelId, details } }));
+const calculateCost = (modelId: string, tokens: number): number => {
+  const model = Object.keys(MODEL_PRICING).find(key =>
+    modelId.toLowerCase().includes(key)
+  ) || 'unknown';
+  const pricing = MODEL_PRICING[model as keyof typeof MODEL_PRICING] || { input: 0, output: 0 };
+
+  // Estimate breakdown (approximate if not provided)
+  // Assuming 70% input, 30% output for typical script generation
+  const inputTokens = tokens * 0.7;
+  const outputTokens = tokens * 0.3;
+
+  return (inputTokens / 1_000_000 * pricing.input) + (outputTokens / 1_000_000 * pricing.output);
+};
+
+export const notifyApiUsage = (usageAmount: number = 0, modelId: string = 'unknown', details: any = {}) => {
+  // Estimate tokens if not provided (approx 1 token per 4 chars of response or 1000 per request)
+  // This is a rough fallback. Ideally we should get real token usage from API response metadata.
+  const estimatedTokens = details.totalTokens || 1000;
+  const cost = calculateCost(modelId, estimatedTokens);
+
+  window.dispatchEvent(new CustomEvent('gemini-api-usage', {
+    detail: {
+      usageAmount,
+      model: modelId,
+      tokens: estimatedTokens,
+      cost: cost,
+      details
+    }
+  }));
 };
 
 // --- Key Management (Simplified) ---
@@ -35,12 +63,12 @@ const detectLanguage = (text: string): 'Thai' | 'English' => {
   return /[ก-๙]/.test(text) ? 'Thai' : 'English';
 };
 
-const withRetry = async <T>(operation: () => Promise<T>, retries = 3, initialDelay = 3000): Promise<T> => {
+const withRetry = async <T>(operation: () => Promise<T>, retries = 3, initialDelay = 3000, modelId: string = 'unknown'): Promise<T> => {
   let lastError: any;
   for (let i = 0; i < retries; i++) {
     try {
       const result = await operation();
-      notifyApiUsage();
+      notifyApiUsage(1, modelId);
       return result;
     } catch (error: any) {
       lastError = error;
@@ -203,7 +231,7 @@ export const generateShortsScript = async (
 
     const data = safeParseJson(response.text || '{}');
     return { ...data, scenes: (data.scenes || []).map((s: any) => ({ ...s, status: 'pending' })) };
-  });
+  }, 3, 3000, textModel);
 };
 
 /**
@@ -310,7 +338,7 @@ export const generateLongVideoScript = async (
 
     const data = safeParseJson(response.text || '{}');
     return { ...data, scenes: (data.scenes || []).map((s: any) => ({ ...s, status: 'pending' })) };
-  });
+  }, 3, 3000, textModel);
 };
 
 export const refineVisualPrompt = async (topic: string, style: string, voiceover: string): Promise<string> => {
@@ -392,7 +420,7 @@ export const generatePodcastScript = async (topic: string, language: string = 'A
       config: { responseMimeType: "application/json" }
     });
     return safeParseJson(response.text || '{}');
-  });
+  }, 3, 3000, 'gemini-3-flash-preview');
 };
 
 // Advanced Podcast Script Generator with Style Templates, Custom Host Names, and Emotion Tags
@@ -447,11 +475,14 @@ OUTPUT FORMAT (JSON):
       config: { responseMimeType: "application/json" }
     });
     return safeParseJson(response.text || '{}');
-  });
+  }, 3, 3000, model);
 };
 
-export const generatePodcastImage = async (style: string = 'Cinematic', model?: string): Promise<string> => {
-  return generateImageForScene("Professional podcast studio, neon lighting, depth of field", model || 'gemini-2.5-flash-image', '16:9', style);
+export const generatePodcastImage = async (style: string = 'Cinematic', model?: string, topic?: string): Promise<string> => {
+  const prompt = topic
+    ? `Cinematic podcast studio scene with visual elements representing "${topic}". Professional lighting, depth of field, modern studio setup with thematic decorations related to the topic.`
+    : "Professional podcast studio, neon lighting, depth of field";
+  return generateImageForScene(prompt, model || 'gemini-2.5-flash-image', '16:9', style);
 };
 
 // ในไฟล์ geminiService.ts
