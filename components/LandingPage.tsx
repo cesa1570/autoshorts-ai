@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Sparkles, Video, Clapperboard, Mic, Zap, Shield, CheckCircle2,
     ArrowRight, Play, ChevronDown, Monitor, Rocket, Calendar,
-    Star, Users, Bot, Palette, Volume2, Film, Edit3, Smartphone
+    Star, Users, Bot, Palette, Volume2, Film, Edit3, Smartphone, Activity
 } from 'lucide-react';
 import LegalModal from './LegalModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
@@ -79,10 +79,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
             gradient: 'from-[#C5A059] to-[#b38f4d]'
         },
         {
-            icon: Volume2,
-            title: 'Voice Cloning',
-            description: 'Ultra-realistic multi-language voice synthesis.',
-            gradient: 'from-white to-gray-400'
+            icon: Activity,
+            title: 'Usage Analytics',
+            description: 'Real-time token usage & cost tracking dashboard.',
+            gradient: 'from-emerald-400 to-emerald-600'
         }
     ];
 
@@ -150,7 +150,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                 {/* Video Background */}
                 <div className="absolute inset-0 z-0 opacity-50 pointer-events-none mix-blend-screen">
                     <video
-                        className="w-full h-full object-cover blur-xl grayscale scale-110"
+                        className="w-full h-full object-cover blur-sm grayscale scale-110"
                         autoPlay loop muted playsInline
                     >
                         <source src="/cinemabg.mp4" type="video/mp4" />
@@ -422,24 +422,24 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
 
                         {/* Standard Pro */}
                         <FadeInWhenVisible delay={400}>
-                            <div className="relative group bg-[#050505] border border-white/5 hover:border-white/20 rounded-sm p-10 transition-all duration-300 h-full flex flex-col opacity-60 hover:opacity-100">
+                            <div className="relative group bg-[#050505] border border-white/10 hover:border-white/30 rounded-sm p-10 transition-all duration-300 h-full flex flex-col hover:shadow-[0_0_50px_rgba(255,255,255,0.05)]">
                                 <div className="mb-8">
-                                    <h3 className="text-sm font-black text-neutral-500 uppercase tracking-[0.2em] mb-2">Enterprise Standard</h3>
+                                    <h3 className="text-sm font-black text-neutral-400 uppercase tracking-[0.2em] mb-2 group-hover:text-white transition-colors">Enterprise Standard</h3>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-6xl font-black text-white">$99</span>
                                         <span className="text-neutral-500 font-bold uppercase tracking-widest text-xs">/ Year</span>
                                     </div>
                                 </div>
                                 <ul className="space-y-4 mb-10 flex-1">
-                                    {['Full System Access', 'Standard Queue', 'Commercial Rights', '1080p Export', 'Basic Support'].map((feature, i) => (
-                                        <li key={i} className="flex items-center gap-3 text-sm font-medium text-neutral-400">
-                                            <CheckCircle2 size={16} className="text-neutral-600" /> {feature}
+                                    {['Full System Access', 'High-Priority Queue', 'Commercial Rights', '4K Cinema Export', 'Priority Support'].map((feature, i) => (
+                                        <li key={i} className="flex items-center gap-3 text-sm font-medium text-neutral-400 group-hover:text-neutral-200 transition-colors">
+                                            <CheckCircle2 size={16} className="text-neutral-600 group-hover:text-white transition-colors" /> {feature}
                                         </li>
                                     ))}
                                 </ul>
                                 <button
                                     onClick={() => onPurchase('price_1SqCD0ChLIAUz0sE8Ylb8t0T')}
-                                    className="w-full bg-transparent border border-white/10 text-white py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-colors"
+                                    className="w-full bg-transparent border border-white/10 text-white py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all"
                                 >
                                     Subscribe Pro
                                 </button>
