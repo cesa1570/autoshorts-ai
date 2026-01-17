@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Sparkles, Video, Clapperboard, Mic, Zap, Shield, CheckCircle2,
     ArrowRight, Play, ChevronDown, Monitor, Rocket, Calendar,
-    Star, Users, Bot, Palette, Volume2, Film, Edit3, Smartphone, Activity
+    Star, Users, Bot, Palette, Volume2, Film, Edit3, Smartphone, Activity, MessageSquare, X, Send, Loader2
 } from 'lucide-react';
+import { supabase } from '../services/supabaseClient';
 import LegalModal from './LegalModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
 
@@ -45,6 +46,38 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount }) => {
     const isEarlyBirdAvailable = proCount < 100;
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | null>(null);
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [feedbackMessage, setFeedbackMessage] = useState('');
+    const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+    const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+    const handleSendFeedback = async () => {
+        if (!feedbackMessage.trim()) return;
+
+        setIsSendingFeedback(true);
+        try {
+            const { error } = await supabase
+                .from('feedback')
+                .insert([
+                    {
+                        message: feedbackMessage,
+                        created_at: new Date().toISOString(),
+                        source: 'landing_page'
+                    }
+                ]);
+
+            if (error) throw error;
+
+            alert('Feedback sent successfully! Thank you.');
+            setShowFeedback(false);
+            setFeedbackMessage('');
+        } catch (error) {
+            console.error('Error sending feedback:', error);
+            alert('Could not send message. Please try again later.');
+        } finally {
+            setIsSendingFeedback(false);
+        }
+    };
 
     // --- Data ---
     const features = [
@@ -449,6 +482,49 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                 </div>
             </section >
 
+            {/* --- FAQ Section --- */}
+            <section className="py-20 bg-[#050505] border-t border-white/5">
+                <div className="max-w-3xl mx-auto px-6">
+                    <FadeInWhenVisible>
+                        <div className="text-center mb-12">
+                            <span className="text-[#C5A059] text-[10px] font-black uppercase tracking-[0.4em]">Support</span>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-white mt-2">Frequently Asked Questions</h2>
+                        </div>
+                    </FadeInWhenVisible>
+
+                    <div className="space-y-2">
+                        {[
+                            { q: "Can I use the videos for commercial purposes?", a: "Yes. All plans (Early Bird & Enterprise) include full commercial rights. You own 100% of the content you generate." },
+                            { q: "How does the AI Credit system work?", a: "Each tier receives a monthly allowance of tokens. These tokens are used for generating scripts, images, voiceovers, and rendering videos." },
+                            { q: "Can I cancel my subscription anytime?", a: "Absolutely. You can cancel directly from your dashboard at any time. Your access will continue until the end of your billing period." },
+                            { q: "Do the videos have watermarks?", a: "No. All exports from our paid plans are 100% watermark-free and professional grade." },
+                            { q: "What happens if I hit the limit?", a: "If you exceed your monthly limits, you can easily purchase top-up packs or upgrade your tier instantly from the dashboard." },
+                            { q: "How detailed are the analytics?", a: "Our Usage Analytics dashboard provides real-time tracking of token consumption, cost per project, and AI model performance (Gemini/Veo)." },
+                            { q: "Do you offer refunds?", a: "We stand by our product. If the system doesn't generate content as described, contact support within 7 days for a full refund." }
+                        ].map((item, i) => (
+                            <FadeInWhenVisible key={i} delay={i * 50}>
+                                <div className="border border-white/5 bg-[#0A0A0A] rounded-sm overflow-hidden transition-all duration-300 hover:border-white/10">
+                                    <button
+                                        onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                                        className="w-full flex items-center justify-between p-6 text-left"
+                                    >
+                                        <span className={`text-sm font-bold uppercase tracking-wider transition-colors ${openFaq === i ? 'text-[#C5A059]' : 'text-neutral-300'}`}>
+                                            {item.q}
+                                        </span>
+                                        <ChevronDown size={16} className={`text-neutral-500 transition-transform duration-300 ${openFaq === i ? 'rotate-180 text-[#C5A059]' : ''}`} />
+                                    </button>
+                                    <div className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        <div className="p-6 pt-0 text-sm text-neutral-400 font-medium leading-relaxed">
+                                            {item.a}
+                                        </div>
+                                    </div>
+                                </div>
+                            </FadeInWhenVisible>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* --- Footer --- */}
             < footer className="py-16 border-t border-white/5 bg-[#020202]" >
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
@@ -462,7 +538,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                     <div className="flex items-center gap-8 text-xs font-bold text-neutral-500 uppercase tracking-widest">
                         <button onClick={() => setShowLegal('privacy')} className="hover:text-[#C5A059] transition-colors">Privacy Database</button>
                         <button onClick={() => setShowLegal('terms')} className="hover:text-[#C5A059] transition-colors">Terms of Use</button>
-                        <button className="hover:text-[#C5A059] transition-colors">Contact Support</button>
+                        <button onClick={() => setShowFeedback(true)} className="hover:text-[#C5A059] transition-colors">Contact Support</button>
                     </div>
                     <div className="text-xs text-neutral-700 font-mono">
                         VERSION 0 [BETA]
@@ -475,6 +551,45 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                     type={showLegal}
                     onClose={() => setShowLegal(null)}
                 />
+            )}
+
+            {showFeedback && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 relative shadow-2xl animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setShowFeedback(false)}
+                            className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-full bg-[#C5A059]/10 flex items-center justify-center">
+                                <MessageSquare size={20} className="text-[#C5A059]" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-white uppercase tracking-tight">Feedback</h3>
+                                <p className="text-xs text-neutral-500 font-bold uppercase tracking-widest">Share your thoughts with us</p>
+                            </div>
+                        </div>
+
+                        <textarea
+                            className="w-full h-40 bg-black border border-white/10 rounded-xl p-4 text-white placeholder-neutral-600 focus:outline-none focus:border-[#C5A059] transition-colors mb-6 resize-none font-medium"
+                            placeholder="Type your feedback, feature requests, or bug reports here..."
+                            value={feedbackMessage}
+                            onChange={(e) => setFeedbackMessage(e.target.value)}
+                        />
+
+                        <button
+                            onClick={handleSendFeedback}
+                            disabled={!feedbackMessage.trim() || isSendingFeedback}
+                            className="w-full bg-[#C5A059] text-black py-4 rounded-xl font-black uppercase tracking-widest hover:bg-[#d4af37] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSendingFeedback ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                            {isSendingFeedback ? 'Sending...' : 'Send Feedback'}
+                        </button>
+                    </div>
+                </div>
             )}
         </div >
     );
