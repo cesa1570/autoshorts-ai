@@ -141,19 +141,20 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
 
             {/* --- Hero Section --- */}
             <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-                {/* Video Background */}
-                <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-                    <video
-                        className="w-full h-full object-cover blur-3xl scale-110 grayscale"
-                        autoPlay loop muted playsInline
-                        src="/cinemabg.mp4"
-                    />
-                </div>
-
                 {/* Abstract Background */}
                 <div className="absolute inset-0 opacity-20 pointer-events-none">
                     <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-[#C5A059] rounded-full blur-[150px] animate-pulse duration-[5000ms]" />
                     <div className="absolute bottom-[20%] right-[20%] w-[400px] h-[400px] bg-neutral-800 rounded-full blur-[150px]" />
+                </div>
+
+                {/* Video Background */}
+                <div className="absolute inset-0 z-0 opacity-50 pointer-events-none mix-blend-screen">
+                    <video
+                        className="w-full h-full object-cover blur-xl grayscale scale-110"
+                        autoPlay loop muted playsInline
+                    >
+                        <source src="/cinemabg.mp4" type="video/mp4" />
+                    </video>
                 </div>
 
                 {/* Grid Overlay */}
