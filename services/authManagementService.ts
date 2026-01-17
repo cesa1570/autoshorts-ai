@@ -108,5 +108,10 @@ export const authManagementService = {
             return 0;
         }
         return count || 0;
+    },
+
+    async getProUserCount(): Promise<number> {
+        // Alias for getSubscriberCount - used by PricingModal for Early Bird slot counter
+        return this.getSubscriberCount();
     }
 };
