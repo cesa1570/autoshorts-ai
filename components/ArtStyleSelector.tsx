@@ -18,7 +18,7 @@ export const STYLES: StyleOption[] = [
     description: 'High-end Hollywood aesthetics with professional depth of field and color grading.',
     dna: ['Anamorphic Lens', 'Golden Hour', 'Shallow Focus', '8K Raw'],
     image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=800',
-    technicalHint: 'Adds: 35mm lens, dramatic lighting, anamorphic flares, color-graded'
+    technicalHint: 'cinematic shot, 35mm anamorphic lens, f/1.4 shallow depth of field, golden hour lighting, dramatic shadows, color graded, film grain, 8K resolution, professional cinematography, movie still, ARRI Alexa camera'
   },
   {
     id: 'Anime',
@@ -26,7 +26,7 @@ export const STYLES: StyleOption[] = [
     description: 'Vibrant cel-shaded visuals inspired by modern Makoto Shinkai animation.',
     dna: ['Saturated Colors', 'Expressive Lines', 'Stylized Sky', 'Hand-drawn feel'],
     image: 'https://images.unsplash.com/photo-1542931287-023b922fa89b?auto=format&fit=crop&q=80&w=800',
-    technicalHint: 'Adds: cel shaded, vibrant lines, anime aesthetic, stylized textures'
+    technicalHint: 'anime style, Makoto Shinkai, cel shaded, vibrant saturated colors, detailed sky with volumetric clouds, soft glow lighting, expressive linework, digital painting, your name movie aesthetic, 4K anime keyframe'
   },
   {
     id: 'Cyberpunk',
@@ -34,7 +34,7 @@ export const STYLES: StyleOption[] = [
     description: 'Dystopian future aesthetics with high-contrast neon and rainy reflections.',
     dna: ['Neon Glow', 'Chromatic Aberration', 'Volumetric Fog', 'Night City'],
     image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=800',
-    technicalHint: 'Adds: neon lights, rainy street, cyberpunk aesthetic, high contrast'
+    technicalHint: 'cyberpunk 2077 style, neon pink blue lights, rainy night street, wet reflections, holographic ads, chromatic aberration, volumetric fog, high contrast, blade runner aesthetic, dystopian cityscape, 8K cinematic'
   },
   {
     id: 'Horror',
@@ -42,7 +42,7 @@ export const STYLES: StyleOption[] = [
     description: 'Eerie, desaturated, and high-tension compositions for mystery and suspense.',
     dna: ['Chiaroscuro', 'Heavy Grain', 'Shadow Play', 'Creepy Details'],
     image: 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=800',
-    technicalHint: 'Adds: dark atmosphere, grainy texture, low-key lighting, spooky vibe'
+    technicalHint: 'dark horror atmosphere, chiaroscuro lighting, heavy film grain, desaturated color palette, deep shadows, fog and mist, eerie unsettling mood, low-key side lighting, creepy details, psychological terror, 35mm horror film'
   },
   {
     id: 'Documentary',
@@ -50,7 +50,7 @@ export const STYLES: StyleOption[] = [
     description: 'Realistic, high-fidelity textures with neutral, natural lighting.',
     dna: ['Natural Light', 'Macro Detail', 'True Color', 'Clean Frame'],
     image: 'https://images.unsplash.com/photo-1500485035595-cbe6f645feb1?auto=format&fit=crop&q=80&w=800',
-    technicalHint: 'Adds: neutral lighting, documentary style, macro lens, realistic textures'
+    technicalHint: 'National Geographic photo, photorealistic, natural lighting, high fidelity textures, neutral color profile, macro detail, clean composition, professional DSLR shot, 8K resolution, documentary photography, ultra realistic'
   },
   {
     id: 'Unreal',
@@ -58,7 +58,7 @@ export const STYLES: StyleOption[] = [
     description: 'Hyper-realistic 3D rendering with advanced global illumination and ray tracing.',
     dna: ['Lumen', 'Nanite', 'Ray Tracing', '8K Render'],
     image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&q=80&w=800',
-    technicalHint: 'Adds: Unreal Engine 5 render, 8k resolution, lumen global illumination'
+    technicalHint: 'Unreal Engine 5 render, Lumen global illumination, Nanite geometry, ray tracing reflections, photorealistic 3D, 8K resolution, physically based rendering, subsurface scattering, AAA game graphics, hyperrealistic CGI'
   },
   {
     id: 'Lego',
@@ -66,7 +66,7 @@ export const STYLES: StyleOption[] = [
     description: 'The world reimagined as plastic bricks with stunning macro details and gloss.',
     dna: ['Plastic Texture', 'Studs', 'Tilt-shift', 'Toy Photography'],
     image: '/images/lego.jpeg',
-    technicalHint: 'lego style, plastic bricks, macro photography, tilt-shift, studs, glossy plastic, toy aesthetic, miniature world, vibrant colors'
+    technicalHint: 'LEGO brick style, everything made of plastic LEGO bricks, visible studs, glossy plastic material, tilt-shift photography, macro lens, toy miniature aesthetic, vibrant primary colors, studio lighting, minifigure scale'
   },
   {
     id: 'Disney',
@@ -74,7 +74,7 @@ export const STYLES: StyleOption[] = [
     description: 'Heartwarming 3D animation style with soft lighting, big eyes, and magical vibes.',
     dna: ['Pixar Style', 'Soft Light', 'Expressive', '3D Render'],
     image: '/images/disney.jpg',
-    technicalHint: 'pixar style, disney animation, 3d render, soft subsurface scattering, expressive character, cute, dreamy lighting, cinema 4d, octane render'
+    technicalHint: 'Pixar Disney 3D animation, soft subsurface scattering skin, big expressive eyes, cute character design, dreamy soft lighting, smooth rounded shapes, Octane render, Cinema 4D, heartwarming atmosphere, modern Disney movie still'
   },
   {
     id: 'Minecraft',
@@ -82,7 +82,7 @@ export const STYLES: StyleOption[] = [
     description: 'A blocky, voxel-based aesthetic inspired by the iconic sandbox game.',
     dna: ['Voxel Art', 'Blocky', '8-Bit 3D', 'Sandbox'],
     image: '/images/minecraft.jpg',
-    technicalHint: 'minecraft video game style, voxel art, blocky characters, pixelated textures, isometric view, bright colors, cubic world, shaders'
+    technicalHint: 'Minecraft video game style, voxel art, blocky cube-based world, pixelated 16x16 textures, isometric view, RTX shaders, volumetric lighting, cubic characters, dirt grass blocks, sandbox game aesthetic'
   },
   {
     id: 'Roblox',
@@ -90,7 +90,7 @@ export const STYLES: StyleOption[] = [
     description: 'Blocky characters and simple environments inspired by the creative world of Roblox.',
     dna: ['R6/R15 Characters', 'Low Poly', 'BloxStyle', 'Vibrant Icons'],
     image: '/images/roblox.jpg',
-    technicalHint: 'roblox style, blocky characters, low poly 3d, vibrant colors, simple textures, plastic look, game ui aesthetic'
+    technicalHint: 'Roblox game style, blocky R15 avatar, simple low poly 3D, bright saturated colors, plastic smooth textures, game lobby aesthetic, flat shading, user-generated content look, cartoony proportions'
   },
   {
     id: 'Baki',
@@ -98,7 +98,7 @@ export const STYLES: StyleOption[] = [
     description: 'Hyper-muscular characters with intense facial expressions and gritty action lines.',
     dna: ['Hyper-Musculature', 'Intense Anatomy', 'Gritty Shading', 'Action Lines'],
     image: '/images/baki.jpg',
-    technicalHint: 'baki hanma style, hyper-muscular anatomy, intense lighting, gritty action lines, heavy shading, martial arts aesthetic, dark atmosphere'
+    technicalHint: 'Baki The Grappler anime style, hyper-detailed muscular anatomy, veins and tendons visible, intense shadowing, gritty crosshatch shading, dramatic action lines, fierce expression, martial arts pose, dark atmospheric background, manga panel aesthetic'
   },
   {
     id: 'JoJo',
@@ -106,7 +106,7 @@ export const STYLES: StyleOption[] = [
     description: 'Flamboyant poses, bold outlines, and psychedelic colors inspired by Araki\'s masterpiece.',
     dna: ['Flamboyant Poses', 'Bold Hatching', 'Psychedelic Colors', 'Dramatic Onomatopoeia'],
     image: '/images/jojo.jpg',
-    technicalHint: 'jojo bizarre adventure style, hirohiko araki, flamboyant poses, bold hatching lines, vibrant psychedelic colors, dramatic lighting, fashion-forward aesthetic'
+    technicalHint: 'JoJo Bizarre Adventure style, Hirohiko Araki art, flamboyant dramatic pose, bold black ink outlines, crosshatch shading, psychedelic vibrant color palette, fashion model aesthetic, menacing aura, Japanese onomatopoeia effects, muscular proportions'
   },
 ];
 

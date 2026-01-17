@@ -395,6 +395,13 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
 
   const handleGenerateAll = async () => {
     if (!state.script || isProcessingAll) return;
+
+    // License Guard
+    if (licenseTier === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsProcessingAll(true);
     try {
       const pendingScenes = (state.script.scenes || []).filter(s => s.status !== 'completed' && s.status !== 'skipped');
@@ -530,6 +537,13 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
 
   const handleExport = async () => {
     if (!playerRef.current) return;
+
+    // License Guard
+    if (licenseTier === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsExporting(true); setExportProgress(0); setExportStage('Initializing...');
     setCurrentFrame(0); setTotalFrames(0); setEtaSeconds(0); setRenderFps(0);
     renderStartTimeRef.current = Date.now();

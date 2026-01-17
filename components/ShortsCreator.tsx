@@ -356,6 +356,13 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
 
   const handleGenerateAll = async () => {
     if (!state.script || isProcessingAll) return;
+
+    // License Guard
+    if (licenseTier === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsProcessingAll(true);
     try {
       const pending = state.script.scenes.filter(s => s.status !== 'completed' && s.status !== 'skipped');
@@ -426,6 +433,12 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
 
   const handleExport = async () => {
     if (!state.script) return;
+
+    // License Guard
+    if (licenseTier === 'free') {
+      setShowUpgradeModal(true);
+      return;
+    }
 
     const pendingCount = state.script.scenes.filter(s => s.status !== 'completed' && s.status !== 'skipped').length;
     if (pendingCount > 0) {
