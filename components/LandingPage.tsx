@@ -282,7 +282,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                 </li>
                             </ul>
                             <button
-                                onClick={() => onPurchase('price_1SqX0KChLIAUz0sEKWMPY7X1')}
+                                onClick={() => onPurchase('price_1SqCAaChLIAUz0sEi5uzftfQ')}
                                 disabled={!isEarlyBirdAvailable}
                                 className={`w-full ${isEarlyBirdAvailable ? 'bg-[#C5A059] text-black hover:bg-[#d4af37]' : 'bg-white/5 text-neutral-500'} py-4 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95`}
                             >
