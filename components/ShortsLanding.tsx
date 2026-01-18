@@ -1,11 +1,17 @@
 import React from 'react';
 import { Video, Zap, Sparkles, Play, ArrowRight, CheckCircle2, Shield } from 'lucide-react';
+import { useBreadcrumbSchema } from '../hooks/useBreadcrumbSchema';
 
 interface ShortsLandingProps {
     onGetStarted: () => void;
 }
 
 const ShortsLanding: React.FC<ShortsLandingProps> = ({ onGetStarted }) => {
+    useBreadcrumbSchema([
+        { name: 'Home', item: '/' },
+        { name: 'Shorts Generator', item: '/shorts' }
+    ]);
+
     const features = [
         'AI-powered script generation',
         'Viral hook optimization',

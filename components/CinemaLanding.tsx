@@ -1,11 +1,17 @@
 import React from 'react';
 import { Clapperboard, Film, Sparkles, Play, ArrowRight, CheckCircle2, Shield, Clock, Layers } from 'lucide-react';
+import { useBreadcrumbSchema } from '../hooks/useBreadcrumbSchema';
 
 interface CinemaLandingProps {
     onGetStarted: () => void;
 }
 
 const CinemaLanding: React.FC<CinemaLandingProps> = ({ onGetStarted }) => {
+    useBreadcrumbSchema([
+        { name: 'Home', item: '/' },
+        { name: 'Cinema Engine', item: '/cinema' }
+    ]);
+
     const features = [
         'Documentary-style AI scripts',
         'Cinematic 16:9 format',

@@ -1,32 +1,43 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import {
-  Video, Zap, Clapperboard, Grid, Key, Shield, Settings as SettingsIcon, Activity, Mic, Share2, User, Clock
+  Video, Zap, Clapperboard, Grid, Key, Shield, Settings as SettingsIcon, Activity, Mic, Share2, User, Clock, Loader2
 } from 'lucide-react';
 import TitleBar from './components/TitleBar';
-
-// Components
-import Hub from './components/Hub';
-import ShortsCreator from './components/ShortsCreator';
-import LongVideoCreator from './components/LongVideoCreator';
-import PodcastCreator from './components/PodcastCreator';
-import Settings from './components/Settings';
-import UsageAnalytics from './components/UsageAnalytics';
-import SocialHub from './components/SocialHub';
-import UserProfile from './components/UserProfile';
-import AuthGate from './components/AuthGate';
-import MissionControl from './components/MissionControl';
-import ShortsLanding from './components/ShortsLanding';
-import CinemaLanding from './components/CinemaLanding';
-import PodcastLanding from './components/PodcastLanding';
-import CookieConsent from './components/CookieConsent';
 import { authManagementService } from './services/authManagementService';
-
 import { AutomationProvider } from './contexts/AutomationContext';
 import { AppContext, AppContextType } from './contexts/AppContext';
 import { setGlobalApiKey, setGlobalTier } from './services/geminiService';
 import { handleAuthCallback } from './services/authService';
 import { Draft } from './types';
+import { Analytics } from "@vercel/analytics/react"
+import AuthGate from './components/AuthGate';
+
+// Lazy Load Components for Performance
+const Hub = React.lazy(() => import('./components/Hub'));
+const ShortsCreator = React.lazy(() => import('./components/ShortsCreator'));
+const LongVideoCreator = React.lazy(() => import('./components/LongVideoCreator'));
+const PodcastCreator = React.lazy(() => import('./components/PodcastCreator'));
+const Settings = React.lazy(() => import('./components/Settings'));
+const UsageAnalytics = React.lazy(() => import('./components/UsageAnalytics'));
+const SocialHub = React.lazy(() => import('./components/SocialHub'));
+const UserProfile = React.lazy(() => import('./components/UserProfile'));
+const MissionControl = React.lazy(() => import('./components/MissionControl'));
+
+// Lazy Load Landing Pages
+const ShortsLanding = React.lazy(() => import('./components/ShortsLanding'));
+const CinemaLanding = React.lazy(() => import('./components/CinemaLanding'));
+const PodcastLanding = React.lazy(() => import('./components/PodcastLanding'));
+const CookieConsent = React.lazy(() => import('./components/CookieConsent'));
+
+const LoadingScreen = () => (
+  <div className="flex items-center justify-center h-screen bg-[#050505] text-[#C5A059]">
+    <div className="flex flex-col items-center gap-4">
+      <Loader2 size={48} className="animate-spin" />
+      <div className="text-xs font-bold uppercase tracking-widest animate-pulse">Loading Engine...</div>
+    </div>
+  </div>
+);
 import { Analytics } from "@vercel/analytics/react"
 
 const App: React.FC = () => {
@@ -337,15 +348,17 @@ const App: React.FC = () => {
   return (
     <AppContext.Provider value={contextValue}>
       {/* SEO Landing Pages - Render based on URL path */}
-      {currentPath === '/shorts' && (
-        <ShortsLanding onGetStarted={() => { window.history.pushState({}, '', '/'); setCurrentPath('/'); }} />
-      )}
-      {currentPath === '/cinema' && (
-        <CinemaLanding onGetStarted={() => { window.history.pushState({}, '', '/'); setCurrentPath('/'); }} />
-      )}
-      {currentPath === '/podcast' && (
-        <PodcastLanding onGetStarted={() => { window.history.pushState({}, '', '/'); setCurrentPath('/'); }} />
-      )}
+      <Suspense fallback={<LoadingScreen />}>
+        {currentPath === '/shorts' && (
+          <ShortsLanding onGetStarted={() => { window.history.pushState({}, '', '/'); setCurrentPath('/'); }} />
+        )}
+        {currentPath === '/cinema' && (
+          <CinemaLanding onGetStarted={() => { window.history.pushState({}, '', '/'); setCurrentPath('/'); }} />
+        )}
+        {currentPath === '/podcast' && (
+          <PodcastLanding onGetStarted={() => { window.history.pushState({}, '', '/'); setCurrentPath('/'); }} />
+        )}
+      </Suspense>
 
       {/* Main App - only show on root path */}
       {(currentPath === '/' || currentPath === '') && (
@@ -358,7 +371,9 @@ const App: React.FC = () => {
 
               <TitleBar />
               <Analytics />
-              <CookieConsent />
+              <Suspense fallback={null}>
+                <CookieConsent />
+              </Suspense>
               <div className={`flex h-screen ${typeof window !== 'undefined' && window.electron ? 'pt-[30px]' : ''}`}>
 
                 <aside className={`hidden md:flex flex-col fixed inset-y-0 z-50 bg-[#080808]/80 backdrop-blur-3xl border-r border-white/5 shadow-[20px_0_50px_rgba(0,0,0,0.5)] transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-24 p-4' : 'w-72 p-8'}`}>
@@ -446,40 +461,42 @@ const App: React.FC = () => {
                       </h2>
                     </header>
 
-                    <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                      <div style={{ display: activeTab === 'hub' ? 'block' : 'none' }}>
-                        <Hub onNavigate={handleNavigate} onResume={handleResumeDraft} />
+                    <Suspense fallback={<LoadingScreen />}>
+                      <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                        <div style={{ display: activeTab === 'hub' ? 'block' : 'none' }}>
+                          <Hub onNavigate={handleNavigate} onResume={handleResumeDraft} />
+                        </div>
+                        <div style={{ display: activeTab === 'create' ? 'block' : 'none' }}>
+                          <ShortsCreator
+                            initialTopic={selectedTopic}
+                            initialLanguage={selectedLanguage}
+                            apiKey={apiKey}
+                            initialDraft={currentDraft}
+                            isActive={activeTab === 'create'}
+                          />
+                        </div>
+                        <div style={{ display: activeTab === 'long' ? 'block' : 'none' }}>
+                          <LongVideoCreator
+                            initialTopic={selectedTopic}
+                            initialLanguage={selectedLanguage}
+                            apiKey={apiKey}
+                            initialDraft={currentDraft}
+                            isActive={activeTab === 'long'}
+                          />
+                        </div>
+                        <div style={{ display: activeTab === 'podcast' ? 'block' : 'none' }}>
+                          <PodcastCreator
+                            initialDraft={currentDraft}
+                            isActive={activeTab === 'podcast'}
+                          />
+                        </div>
+                        {activeTab === 'social' && <SocialHub />}
+                        {activeTab === 'profile' && <UserProfile />}
+                        {activeTab === 'admin' && <MissionControl />}
+                        {activeTab === 'analytics' && <UsageAnalytics />}
+                        {activeTab === 'settings' && <Settings />}
                       </div>
-                      <div style={{ display: activeTab === 'create' ? 'block' : 'none' }}>
-                        <ShortsCreator
-                          initialTopic={selectedTopic}
-                          initialLanguage={selectedLanguage}
-                          apiKey={apiKey}
-                          initialDraft={currentDraft}
-                          isActive={activeTab === 'create'}
-                        />
-                      </div>
-                      <div style={{ display: activeTab === 'long' ? 'block' : 'none' }}>
-                        <LongVideoCreator
-                          initialTopic={selectedTopic}
-                          initialLanguage={selectedLanguage}
-                          apiKey={apiKey}
-                          initialDraft={currentDraft}
-                          isActive={activeTab === 'long'}
-                        />
-                      </div>
-                      <div style={{ display: activeTab === 'podcast' ? 'block' : 'none' }}>
-                        <PodcastCreator
-                          initialDraft={currentDraft}
-                          isActive={activeTab === 'podcast'}
-                        />
-                      </div>
-                      {activeTab === 'social' && <SocialHub />}
-                      {activeTab === 'profile' && <UserProfile />}
-                      {activeTab === 'admin' && <MissionControl />}
-                      {activeTab === 'analytics' && <UsageAnalytics />}
-                      {activeTab === 'settings' && <Settings />}
-                    </div>
+                    </Suspense>
                   </div>
                 </main>
               </div>

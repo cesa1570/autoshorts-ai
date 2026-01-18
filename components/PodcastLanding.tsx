@@ -1,11 +1,17 @@
 import React from 'react';
 import { Mic, Headphones, Sparkles, Play, ArrowRight, CheckCircle2, Shield, Users, Radio } from 'lucide-react';
+import { useBreadcrumbSchema } from '../hooks/useBreadcrumbSchema';
 
 interface PodcastLandingProps {
     onGetStarted: () => void;
 }
 
 const PodcastLanding: React.FC<PodcastLandingProps> = ({ onGetStarted }) => {
+    useBreadcrumbSchema([
+        { name: 'Home', item: '/' },
+        { name: 'Podcast Studio', item: '/podcast' }
+    ]);
+
     const features = [
         'Dual-host AI conversations',
         'Natural human-like dialogue',
