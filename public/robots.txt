@@ -1,0 +1,14 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://lazyautocreator.xyz/sitemap.xml
+
+# Disallow admin/private areas
+Disallow: /admin
+Disallow: /api/
+Disallow: /*.json$
+
+# Crawl-delay for politeness
+Crawl-delay: 1
