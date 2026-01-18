@@ -38,7 +38,7 @@ const LoadingScreen = () => (
     </div>
   </div>
 );
-import { Analytics } from "@vercel/analytics/react"
+
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'hub' | 'create' | 'long' | 'podcast' | 'settings' | 'analytics' | 'social' | 'profile' | 'admin'>('hub');
