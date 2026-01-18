@@ -1,6 +1,18 @@
 {
     "rewrites": [
         {
+            "source": "/shorts",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/cinema",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/podcast",
+            "destination": "/index.html"
+        },
+        {
             "source": "/sitemap.xml",
             "destination": "/sitemap.xml"
         },
