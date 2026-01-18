@@ -25,6 +25,8 @@ import { handleAuthCallback } from './services/authService';
 import { Draft } from './types';
 import { Analytics } from "@vercel/analytics/react"
 
+import { Helmet } from 'react-helmet-async';
+
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'hub' | 'create' | 'long' | 'podcast' | 'settings' | 'analytics' | 'social' | 'profile' | 'admin'>('hub');
   const [currentDraft, setCurrentDraft] = useState<Draft | null>(null);
@@ -326,6 +328,10 @@ const App: React.FC = () => {
       <AuthGate>
         <AutomationProvider>
           <div className="relative min-h-screen bg-[#050505] text-neutral-200 font-sans overflow-hidden">
+            <Helmet>
+              <title>LazyAutoCreator | AI Video Production Suite</title>
+              <meta name="description" content="LazyAutoCreator is an all-in-one AI-powered video production suite. Create Shorts, Movies, and Podcasts with ease using advanced automation." />
+            </Helmet>
             {/* Ambient Background Glows */}
             <div className="fixed -top-24 -left-24 w-96 h-96 bg-[#C5A059]/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="fixed top-1/2 -right-24 w-80 h-80 bg-[#C5A059]/3 rounded-full blur-[100px] pointer-events-none" />
