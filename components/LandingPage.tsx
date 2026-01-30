@@ -2,11 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Sparkles, Video, Clapperboard, Mic, Zap, Shield, CheckCircle2,
     ArrowRight, Play, ChevronDown, Monitor, Rocket, Calendar,
-    Star, Users, Bot, Palette, Volume2, Film, Edit3, Smartphone, Activity, MessageSquare, X, Send, Loader2
+    Star, Users, Bot, Palette, Volume2, Film, Edit3, Smartphone, Activity, MessageSquare, X, Send, Loader2,
+    Globe, Clock, ShieldCheck, CreditCard, Quote
 } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import LegalModal from './LegalModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
+import { useLanguage, type Language } from '../hooks/useLanguage';
 
 // --- Components for Animation ---
 const FadeInWhenVisible: React.FC<{ children: React.ReactNode; delay?: number }> = ({ children, delay = 0 }) => {
@@ -16,7 +18,7 @@ const FadeInWhenVisible: React.FC<{ children: React.ReactNode; delay?: number }>
     useEffect(() => {
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => setIsVisible(entry.isIntersecting));
-        }, { threshold: 0.1 }); // Trigger when 10% visible
+        }, { threshold: 0.1 });
 
         const { current } = domRef;
         if (current) observer.observe(current);
@@ -37,6 +39,60 @@ const FadeInWhenVisible: React.FC<{ children: React.ReactNode; delay?: number }>
     );
 };
 
+// --- Countdown Timer Component ---
+const CountdownTimer: React.FC<{ targetDate: Date; language: Language }> = ({ targetDate, language }) => {
+    const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = targetDate.getTime() - now;
+
+            if (distance < 0) {
+                clearInterval(timer);
+                return;
+            }
+
+            setTimeLeft({
+                days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+                seconds: Math.floor((distance % (1000 * 60)) / 1000)
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [targetDate]);
+
+    const labels = language === 'th'
+        ? { d: 'วัน', h: 'ชม.', m: 'นาที', s: 'วินาที' }
+        : { d: 'days', h: 'hrs', m: 'min', s: 'sec' };
+
+    return (
+        <div className="flex items-center gap-2 text-xs font-mono">
+            <div className="bg-black/50 px-2 py-1 rounded">
+                <span className="text-white font-bold">{timeLeft.days}</span>
+                <span className="text-neutral-400 ml-1">{labels.d}</span>
+            </div>
+            <span className="text-[#C5A059]">:</span>
+            <div className="bg-black/50 px-2 py-1 rounded">
+                <span className="text-white font-bold">{String(timeLeft.hours).padStart(2, '0')}</span>
+                <span className="text-neutral-400 ml-1">{labels.h}</span>
+            </div>
+            <span className="text-[#C5A059]">:</span>
+            <div className="bg-black/50 px-2 py-1 rounded">
+                <span className="text-white font-bold">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                <span className="text-neutral-400 ml-1">{labels.m}</span>
+            </div>
+            <span className="text-[#C5A059]">:</span>
+            <div className="bg-black/50 px-2 py-1 rounded">
+                <span className="text-white font-bold">{String(timeLeft.seconds).padStart(2, '0')}</span>
+                <span className="text-neutral-400 ml-1">{labels.s}</span>
+            </div>
+        </div>
+    );
+};
+
 interface LandingPageProps {
     onLogin: () => void;
     onPurchase: (priceId: string) => void;
@@ -45,11 +101,22 @@ interface LandingPageProps {
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount }) => {
     const isEarlyBirdAvailable = proCount < 100;
+    const slotsRemaining = 100 - proCount;
     const [showLegal, setShowLegal] = useState<'privacy' | 'terms' | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
     const [feedbackMessage, setFeedbackMessage] = useState('');
     const [isSendingFeedback, setIsSendingFeedback] = useState(false);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+    // Language hook
+    const { language, toggleLanguage, t } = useLanguage();
+
+    // Countdown target: 7 days from now (or set a fixed date)
+    const [countdownTarget] = useState(() => {
+        const target = new Date();
+        target.setDate(target.getDate() + 7);
+        return target;
+    });
 
     const handleSendFeedback = async () => {
         if (!feedbackMessage.trim()) return;
@@ -83,38 +150,38 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
     const features = [
         {
             icon: Video,
-            title: 'Shorts Engine',
-            description: 'AI-generated viral shorts tailored for TikTok & Reels.',
+            titleKey: 'features.shorts.title',
+            descKey: 'features.shorts.desc',
             gradient: 'from-[#C5A059] to-[#8a6d3b]'
         },
         {
             icon: Clapperboard,
-            title: 'Cinema Engine',
-            description: 'Long-form documentary production with cinematic depth.',
+            titleKey: 'features.cinema.title',
+            descKey: 'features.cinema.desc',
             gradient: 'from-neutral-100 to-neutral-400'
         },
         {
             icon: Mic,
-            title: 'Podcast Studio',
-            description: 'Dual-host audio experiences with human-like interactions.',
+            titleKey: 'features.podcast.title',
+            descKey: 'features.podcast.desc',
             gradient: 'from-[#C5A059] to-[#E5C079]'
         },
         {
             icon: Bot,
-            title: 'Script Intelligence',
-            description: 'Context-aware scriptwriting powered by Gemini 2.0.',
+            titleKey: 'features.script.title',
+            descKey: 'features.script.desc',
             gradient: 'from-neutral-200 to-neutral-500'
         },
         {
             icon: Palette,
-            title: 'Visual Synthesis',
-            description: 'High-fidelity imagery via Imagen 3 & DALL-E 3.',
+            titleKey: 'features.visual.title',
+            descKey: 'features.visual.desc',
             gradient: 'from-[#C5A059] to-[#b38f4d]'
         },
         {
             icon: Activity,
-            title: 'Usage Analytics',
-            description: 'Real-time token usage & cost tracking dashboard.',
+            titleKey: 'features.analytics.title',
+            descKey: 'features.analytics.desc',
             gradient: 'from-emerald-400 to-emerald-600'
         }
     ];
@@ -127,17 +194,90 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
     ];
 
     const tutorials = [
-        { step: '01', title: 'Select Topic', description: 'Input your core concept.', icon: Edit3 },
-        { step: '02', title: 'AI Generation', description: 'Script & Asset Synthesis.', icon: Bot },
-        { step: '03', title: 'Refinement', description: 'Review and Polish.', icon: Smartphone },
-        { step: '04', title: 'Export', description: 'Render in 4K Quality.', icon: Film },
+        { step: '01', titleKey: 'process.step1.title', descKey: 'process.step1.desc', icon: Edit3 },
+        { step: '02', titleKey: 'process.step2.title', descKey: 'process.step2.desc', icon: Bot },
+        { step: '03', titleKey: 'process.step3.title', descKey: 'process.step3.desc', icon: Smartphone },
+        { step: '04', titleKey: 'process.step4.title', descKey: 'process.step4.desc', icon: Film },
+    ];
+
+    // Social proof stats
+    const stats = [
+        { value: '500+', labelKey: 'social.videosCreated', icon: Video },
+        { value: '50+', labelKey: 'social.activeCreators', icon: Users },
+        { value: '4.9/5', labelKey: 'social.rating', icon: Star },
+    ];
+
+    // Testimonials
+    const testimonials = [
+        {
+            nameKey: 'testimonial.1.name',
+            roleKey: 'testimonial.1.role',
+            textKey: 'testimonial.1.text',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex'
+        },
+        {
+            nameKey: 'testimonial.2.name',
+            roleKey: 'testimonial.2.role',
+            textKey: 'testimonial.2.text',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah'
+        },
+        {
+            nameKey: 'testimonial.3.name',
+            roleKey: 'testimonial.3.role',
+            textKey: 'testimonial.3.text',
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mike'
+        }
+    ];
+
+    // FAQ data with translations
+    const faqItems = language === 'th' ? [
+        { q: "ใช้วิดีโอเพื่อการค้าได้ไหม?", a: "ได้ครับ ทุกแพ็กเกจ (Early Bird & Enterprise) รวมสิทธิ์เชิงพาณิชย์เต็มรูปแบบ คุณเป็นเจ้าของคอนเทนต์ 100%" },
+        { q: "ระบบ AI Credit ทำงานอย่างไร?", a: "แต่ละแพ็กเกจจะได้รับโทเค็นรายเดือน ใช้สำหรับสร้างสคริปต์ ภาพ เสียงพากย์ และเรนเดอร์วิดีโอ" },
+        { q: "ยกเลิกสมาชิกได้ไหม?", a: "ได้ครับ คุณสามารถยกเลิกได้ตลอดเวลาจากแดชบอร์ด สิทธิ์การใช้งานจะยังคงอยู่จนสิ้นสุดรอบการชำระเงิน" },
+        { q: "วิดีโอมี Watermark ไหม?", a: "ไม่มีครับ วิดีโอจากแพ็กเกจเสียเงินทั้งหมดไม่มี Watermark และมีคุณภาพระดับมืออาชีพ" },
+        { q: "ถ้าใช้เกินลิมิตจะเป็นอย่างไร?", a: "คุณสามารถซื้อแพ็กเสริมหรืออัพเกรดแพ็กเกจได้ทันทีจากแดชบอร์ด" },
+        { q: "คืนเงินได้ไหม?", a: "หากระบบไม่สามารถสร้างคอนเทนต์ตามที่อธิบาย ติดต่อ Support ภายใน 7 วันเพื่อขอคืนเงินเต็มจำนวน" }
+    ] : [
+        { q: "Can I use the videos for commercial purposes?", a: "Yes. All plans (Early Bird & Enterprise) include full commercial rights. You own 100% of the content you generate." },
+        { q: "How does the AI Credit system work?", a: "Each tier receives a monthly allowance of tokens. These tokens are used for generating scripts, images, voiceovers, and rendering videos." },
+        { q: "Can I cancel my subscription anytime?", a: "Absolutely. You can cancel directly from your dashboard at any time. Your access will continue until the end of your billing period." },
+        { q: "Do the videos have watermarks?", a: "No. All exports from our paid plans are 100% watermark-free and professional grade." },
+        { q: "What happens if I hit the limit?", a: "If you exceed your monthly limits, you can easily purchase top-up packs or upgrade your tier instantly from the dashboard." },
+        { q: "Do you offer refunds?", a: "We stand by our product. If the system doesn't generate content as described, contact support within 7 days for a full refund." }
     ];
 
     return (
         <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden selection:bg-[#C5A059] selection:text-black font-sans">
 
+            {/* --- Urgency Banner --- */}
+            {isEarlyBirdAvailable && (
+                <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-[#C5A059] via-[#d4af37] to-[#C5A059] text-black py-2 px-4">
+                    <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg">🔥</span>
+                            <span className="font-black text-xs sm:text-sm uppercase tracking-wide">
+                                {t('urgency.title')}: {t('urgency.price')}
+                            </span>
+                        </div>
+                        <div className="hidden sm:block h-4 w-px bg-black/20"></div>
+                        <div className="flex items-center gap-3">
+                            <span className="font-bold text-xs bg-black/20 px-3 py-1 rounded-full">
+                                {slotsRemaining} {t('urgency.slots')}
+                            </span>
+                            <CountdownTimer targetDate={countdownTarget} language={language} />
+                        </div>
+                        <button
+                            onClick={onLogin}
+                            className="hidden sm:flex items-center gap-2 bg-black text-[#C5A059] px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wide hover:bg-neutral-900 transition-colors"
+                        >
+                            {t('nav.getStarted')} <ArrowRight size={14} />
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* --- Navigation --- */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
+            <nav className={`fixed ${isEarlyBirdAvailable ? 'top-10 sm:top-10' : 'top-0'} left-0 right-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5`}>
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 border border-[#C5A059]/30 bg-[#C5A059]/10 rounded-lg flex items-center justify-center">
@@ -152,28 +292,44 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                         </div>
                     </div>
                     <div className="hidden md:flex items-center gap-8">
-                        {['Features', 'Showcase', 'Process', 'Roadmap', 'Pricing'].map((item) => (
-                            <a key={item} href={`#${item.toLowerCase()}`} className="text-neutral-500 hover:text-[#C5A059] text-xs font-bold uppercase tracking-widest transition-colors duration-300">
-                                {item}
+                        {[
+                            { key: 'features', label: t('nav.features') },
+                            { key: 'showcase', label: t('nav.showcase') },
+                            { key: 'process', label: t('nav.process') },
+                            { key: 'roadmap', label: t('nav.roadmap') },
+                            { key: 'pricing', label: t('nav.pricing') }
+                        ].map((item) => (
+                            <a key={item.key} href={`#${item.key}`} className="text-neutral-500 hover:text-[#C5A059] text-xs font-bold uppercase tracking-widest transition-colors duration-300">
+                                {item.label}
                             </a>
                         ))}
                     </div>
                     <div className="flex items-center gap-4">
+                        {/* Language Toggle */}
+                        <button
+                            onClick={toggleLanguage}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                        >
+                            <Globe size={14} className="text-[#C5A059]" />
+                            <span className="text-xs font-bold uppercase tracking-wider">
+                                {language === 'en' ? 'TH' : 'EN'}
+                            </span>
+                        </button>
                         <button onClick={onLogin} className="hidden md:block text-white hover:text-[#C5A059] text-xs font-bold uppercase tracking-widest transition-colors">
-                            Sign In
+                            {t('nav.signin')}
                         </button>
                         <button
                             onClick={onLogin}
                             className="bg-[#C5A059] text-black border border-[#C5A059] px-6 py-2 rounded-lg font-black text-xs uppercase tracking-widest hover:bg-transparent hover:text-[#C5A059] transition-all duration-300"
                         >
-                            Get Started
+                            {t('nav.getStarted')}
                         </button>
                     </div>
                 </div>
             </nav>
 
             {/* --- Hero Section --- */}
-            <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+            <section className={`relative min-h-screen flex items-center justify-center ${isEarlyBirdAvailable ? 'pt-32' : 'pt-20'} overflow-hidden`}>
                 {/* Abstract Background */}
                 <div className="absolute inset-0 opacity-20 pointer-events-none">
                     <div className="absolute top-[20%] left-[20%] w-[500px] h-[500px] bg-[#C5A059] rounded-full blur-[150px] animate-pulse duration-[5000ms]" />
@@ -198,22 +354,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                     <FadeInWhenVisible>
                         <div className="inline-flex items-center gap-3 bg-[#111] border border-[#C5A059]/30 rounded-full px-5 py-2 mb-10 shadow-[0_0_20px_rgba(197,160,89,0.1)]">
                             <Sparkles size={14} className="text-[#C5A059]" />
-                            <span className="text-[10px] font-bold text-[#C5A059] uppercase tracking-[0.2em]">Powered by Gemini 2.0 & Veo</span>
+                            <span className="text-[10px] font-bold text-[#C5A059] uppercase tracking-[0.2em]">{t('hero.badge')}</span>
                         </div>
                     </FadeInWhenVisible>
 
                     <FadeInWhenVisible delay={200}>
                         <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter mb-8 leading-[0.9]">
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-500">Create</span>
-                            <span className="block text-[#C5A059]">Viral</span>
-                            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-neutral-500 to-neutral-800">Legacy</span>
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-500">{t('hero.title1')}</span>
+                            <span className="block text-[#C5A059]">{t('hero.title2')}</span>
+                            <span className="block text-transparent bg-clip-text bg-gradient-to-b from-neutral-500 to-neutral-800">{t('hero.title3')}</span>
                         </h1>
                     </FadeInWhenVisible>
 
                     <FadeInWhenVisible delay={400}>
                         <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-                            The world's most advanced autonomous content engine.
-                            Create YouTube Shorts, Documentaries, and Podcasts with zero manual effort.
+                            {t('hero.subtitle')}
                         </p>
                     </FadeInWhenVisible>
 
@@ -224,7 +379,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                 className="group relative bg-[#C5A059] text-black px-10 py-5 rounded-none font-black text-sm uppercase tracking-[0.2em] transition-all hover:bg-[#d4af37] overflow-hidden"
                             >
                                 <span className="relative z-10 flex items-center gap-3">
-                                    Start Creating <ArrowRight size={18} />
+                                    {t('hero.cta')} <ArrowRight size={18} />
                                 </span>
                                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                             </button>
@@ -232,26 +387,77 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                 href="#showcase"
                                 className="group bg-transparent border border-white/10 text-white px-10 py-5 rounded-none font-black text-sm uppercase tracking-[0.2em] hover:bg-white/5 transition-all flex items-center gap-3"
                             >
-                                <Play size={18} className="text-[#C5A059]" /> Watch Demo
+                                <Play size={18} className="text-[#C5A059]" /> {t('hero.watchDemo')}
                             </a>
                         </div>
                     </FadeInWhenVisible>
                 </div>
 
                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-500">Scroll</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-neutral-500">{t('hero.scroll')}</span>
                     <div className="h-10 w-[1px] bg-gradient-to-b from-[#C5A059] to-transparent"></div>
                 </div>
             </section>
 
+            {/* --- Social Proof Section --- */}
+            <section className="py-16 bg-[#080808] border-y border-white/5">
+                <div className="max-w-7xl mx-auto px-6">
+                    <FadeInWhenVisible>
+                        <div className="text-center mb-12">
+                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">{t('social.title')}</span>
+                        </div>
+                    </FadeInWhenVisible>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-3 gap-8 mb-16">
+                        {stats.map((stat, i) => (
+                            <FadeInWhenVisible key={i} delay={i * 100}>
+                                <div className="text-center group">
+                                    <div className="w-16 h-16 mx-auto mb-4 bg-[#C5A059]/10 border border-[#C5A059]/30 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <stat.icon size={24} className="text-[#C5A059]" />
+                                    </div>
+                                    <div className="text-4xl md:text-5xl font-black text-white mb-2">{stat.value}</div>
+                                    <div className="text-xs font-bold text-neutral-500 uppercase tracking-widest">{t(stat.labelKey)}</div>
+                                </div>
+                            </FadeInWhenVisible>
+                        ))}
+                    </div>
+
+                    {/* Testimonials */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {testimonials.map((testimonial, i) => (
+                            <FadeInWhenVisible key={i} delay={i * 150}>
+                                <div className="bg-[#0A0A0A] border border-white/5 p-6 rounded-lg hover:border-[#C5A059]/30 transition-colors group">
+                                    <Quote size={24} className="text-[#C5A059]/30 mb-4" />
+                                    <p className="text-neutral-300 text-sm mb-6 leading-relaxed italic">
+                                        "{t(testimonial.textKey)}"
+                                    </p>
+                                    <div className="flex items-center gap-3">
+                                        <img
+                                            src={testimonial.avatar}
+                                            alt={t(testimonial.nameKey)}
+                                            className="w-10 h-10 rounded-full bg-neutral-800"
+                                        />
+                                        <div>
+                                            <div className="text-white font-bold text-sm">{t(testimonial.nameKey)}</div>
+                                            <div className="text-neutral-500 text-xs">{t(testimonial.roleKey)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </FadeInWhenVisible>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* --- Showcase Section (Video Preview) --- */}
-            <section id="showcase" className="py-32 relative bg-[#080808]">
+            <section id="showcase" className="py-32 relative bg-[#050505]">
                 <div className="max-w-7xl mx-auto px-6">
                     <FadeInWhenVisible>
                         <div className="text-center mb-24">
-                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em] block mb-4">Showcase</span>
-                            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6">See What's Possible</h2>
-                            <p className="text-neutral-400 max-w-2xl mx-auto">Generated entirely by AI without human intervention.</p>
+                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em] block mb-4">{t('nav.showcase')}</span>
+                            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6">{t('showcase.title')}</h2>
+                            <p className="text-neutral-400 max-w-2xl mx-auto">{t('showcase.subtitle')}</p>
                         </div>
                     </FadeInWhenVisible>
 
@@ -275,8 +481,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                 </div>
                             </div>
                             <div className="text-center mt-8">
-                                <h3 className="text-xl font-bold uppercase tracking-widest text-white mb-2">Shorts Engine</h3>
-                                <p className="text-neutral-500 text-sm">9:16 Vertical Video • Viral Pacing</p>
+                                <h3 className="text-xl font-bold uppercase tracking-widest text-white mb-2">{t('showcase.shorts')}</h3>
+                                <p className="text-neutral-500 text-sm">{t('showcase.shortsDesc')}</p>
                             </div>
                         </FadeInWhenVisible>
 
@@ -300,8 +506,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                 </div>
                             </div>
                             <div className="text-center mt-8">
-                                <h3 className="text-xl font-bold uppercase tracking-widest text-white mb-2">Cinema Engine</h3>
-                                <p className="text-neutral-500 text-sm">16:9 Long Form • 4K Documentary Style</p>
+                                <h3 className="text-xl font-bold uppercase tracking-widest text-white mb-2">{t('showcase.cinema')}</h3>
+                                <p className="text-neutral-500 text-sm">{t('showcase.cinemaDesc')}</p>
                             </div>
                         </FadeInWhenVisible>
                     </div>
@@ -309,16 +515,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
             </section>
 
             {/* --- Features Section --- */}
-            <section id="features" className="py-32 relative bg-[#050505]">
+            <section id="features" className="py-32 relative bg-[#080808]">
                 <div className="max-w-7xl mx-auto px-6">
                     <FadeInWhenVisible>
                         <div className="mb-20 border-b border-white/5 pb-10 flex flex-col md:flex-row items-end justify-between gap-6">
                             <div>
-                                <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em] block mb-4">Capabilities</span>
-                                <h2 className="text-5xl font-black uppercase tracking-tight text-white m-0">Core Engine</h2>
+                                <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em] block mb-4">{t('nav.features')}</span>
+                                <h2 className="text-5xl font-black uppercase tracking-tight text-white m-0">{t('features.title')}</h2>
                             </div>
                             <p className="text-neutral-500 max-w-md text-right md:text-left">
-                                A suite of autonomous agents working in harmony to produce professional content.
+                                {t('features.subtitle')}
                             </p>
                         </div>
                     </FadeInWhenVisible>
@@ -333,22 +539,22 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                         <feature.icon size={24} className="text-[#C5A059]" />
                                     </div>
 
-                                    <h3 className="text-xl font-black uppercase tracking-wider text-white mb-3 group-hover:text-[#C5A059] transition-colors">{feature.title}</h3>
-                                    <p className="text-neutral-500 text-sm leading-relaxed">{feature.description}</p>
+                                    <h3 className="text-xl font-black uppercase tracking-wider text-white mb-3 group-hover:text-[#C5A059] transition-colors">{t(feature.titleKey)}</h3>
+                                    <p className="text-neutral-500 text-sm leading-relaxed">{t(feature.descKey)}</p>
                                 </div>
                             </FadeInWhenVisible>
                         ))}
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* --- Process Section --- */}
-            < section id="process" className="py-32 bg-[#080808] border-y border-white/5" >
+            <section id="process" className="py-32 bg-[#050505] border-y border-white/5">
                 <div className="max-w-7xl mx-auto px-6">
                     <FadeInWhenVisible>
                         <div className="text-center mb-24">
-                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">Workflow</span>
-                            <h2 className="text-4xl font-black uppercase tracking-tight mt-4 text-white">Zero To Hero</h2>
+                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">{t('nav.process')}</span>
+                            <h2 className="text-4xl font-black uppercase tracking-tight mt-4 text-white">{t('process.title')}</h2>
                         </div>
                     </FadeInWhenVisible>
 
@@ -363,23 +569,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                         <step.icon size={28} className="text-[#C5A059] group-hover:text-white transition-colors" />
                                     </div>
                                     <div className="text-[#C5A059] text-[10px] font-black uppercase tracking-widest mb-2">Step {step.step}</div>
-                                    <h3 className="text-lg font-black uppercase text-white mb-2">{step.title}</h3>
-                                    <p className="text-xs text-neutral-500 font-medium px-4">{step.description}</p>
+                                    <h3 className="text-lg font-black uppercase text-white mb-2">{t(step.titleKey)}</h3>
+                                    <p className="text-xs text-neutral-500 font-medium px-4">{t(step.descKey)}</p>
                                 </div>
                             </FadeInWhenVisible>
                         ))}
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* --- Roadmap Section --- */}
-            < section id="roadmap" className="py-32 bg-[#050505] relative overflow-hidden" >
+            <section id="roadmap" className="py-32 bg-[#080808] relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
                     <FadeInWhenVisible>
                         <div className="mb-20 flex items-end justify-between border-b border-white/5 pb-8">
                             <div>
-                                <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">Timeline</span>
-                                <h2 className="text-4xl font-black uppercase tracking-tight text-white mt-4">System Roadmap</h2>
+                                <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">{t('nav.roadmap')}</span>
+                                <h2 className="text-4xl font-black uppercase tracking-tight text-white mt-4">{t('roadmap.title')}</h2>
                             </div>
                         </div>
                     </FadeInWhenVisible>
@@ -408,15 +614,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                         ))}
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* --- Pricing Section --- */}
-            < section id="pricing" className="py-32 bg-[#080808]" >
+            <section id="pricing" className="py-32 bg-[#050505]">
                 <div className="max-w-7xl mx-auto px-6">
                     <FadeInWhenVisible>
                         <div className="text-center mb-24">
-                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">Access</span>
-                            <h2 className="text-5xl font-black uppercase tracking-tight text-white mt-4">Select Tier</h2>
+                            <span className="text-[#C5A059] text-xs font-black uppercase tracking-[0.5em]">{t('nav.pricing')}</span>
+                            <h2 className="text-5xl font-black uppercase tracking-tight text-white mt-4">{t('pricing.title')}</h2>
+                        </div>
+                    </FadeInWhenVisible>
+
+                    {/* Trust Badges */}
+                    <FadeInWhenVisible>
+                        <div className="flex flex-wrap items-center justify-center gap-6 mb-16">
+                            <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-full">
+                                <ShieldCheck size={16} className="text-emerald-500" />
+                                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">{t('trust.moneyBack')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+                                <CheckCircle2 size={16} className="text-white/70" />
+                                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{t('trust.noQuestions')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full">
+                                <CreditCard size={16} className="text-white/70" />
+                                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider">{t('trust.securePayment')}</span>
+                            </div>
                         </div>
                     </FadeInWhenVisible>
 
@@ -426,18 +650,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                             <div className="relative group bg-[#0A0A0A] border border-[#C5A059]/30 hover:border-[#C5A059] rounded-sm p-10 transition-all duration-300 h-full flex flex-col">
                                 {isEarlyBirdAvailable && (
                                     <div className="absolute top-0 right-0 bg-[#C5A059] text-black text-[10px] font-black uppercase tracking-widest px-4 py-1">
-                                        Limited Offer
+                                        {t('pricing.limited')}
                                     </div>
                                 )}
                                 <div className="mb-8">
-                                    <h3 className="text-sm font-black text-[#C5A059] uppercase tracking-[0.2em] mb-2">Early Bird Access</h3>
+                                    <h3 className="text-sm font-black text-[#C5A059] uppercase tracking-[0.2em] mb-2">{t('pricing.earlyBird')}</h3>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-6xl font-black text-white">$19</span>
-                                        <span className="text-neutral-500 font-bold uppercase tracking-widest text-xs">/ Year</span>
+                                        <span className="text-neutral-500 font-bold uppercase tracking-widest text-xs">{t('pricing.perYear')}</span>
                                     </div>
+                                    {isEarlyBirdAvailable && (
+                                        <div className="mt-2 text-xs text-[#C5A059] font-bold">
+                                            {slotsRemaining} {t('urgency.slots')}
+                                        </div>
+                                    )}
                                 </div>
                                 <ul className="space-y-4 mb-10 flex-1">
-                                    {['Full System Access', 'Priority Rendering', 'Commercial Rights', '4K Export Support', 'All Future Updates'].map((feature, i) => (
+                                    {[t('pricing.feature1'), t('pricing.feature2'), t('pricing.feature3'), t('pricing.feature4'), t('pricing.feature5')].map((feature, i) => (
                                         <li key={i} className="flex items-center gap-3 text-sm font-medium text-neutral-300">
                                             <CheckCircle2 size={16} className="text-[#C5A059]" /> {feature}
                                         </li>
@@ -448,7 +677,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                     disabled={!isEarlyBirdAvailable}
                                     className="w-full bg-[#C5A059] text-black py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-[#d4af37] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {isEarlyBirdAvailable ? 'Secure Access' : 'Limit Reached'}
+                                    {isEarlyBirdAvailable ? t('pricing.secureAccess') : t('pricing.limitReached')}
                                 </button>
                             </div>
                         </FadeInWhenVisible>
@@ -457,14 +686,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                         <FadeInWhenVisible delay={400}>
                             <div className="relative group bg-[#050505] border border-white/10 hover:border-white/30 rounded-sm p-10 transition-all duration-300 h-full flex flex-col hover:shadow-[0_0_50px_rgba(255,255,255,0.05)]">
                                 <div className="mb-8">
-                                    <h3 className="text-sm font-black text-neutral-400 uppercase tracking-[0.2em] mb-2 group-hover:text-white transition-colors">Enterprise Standard</h3>
+                                    <h3 className="text-sm font-black text-neutral-400 uppercase tracking-[0.2em] mb-2 group-hover:text-white transition-colors">{t('pricing.enterprise')}</h3>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-6xl font-black text-white">$99</span>
-                                        <span className="text-neutral-500 font-bold uppercase tracking-widest text-xs">/ Year</span>
+                                        <span className="text-neutral-500 font-bold uppercase tracking-widest text-xs">{t('pricing.perYear')}</span>
                                     </div>
                                 </div>
                                 <ul className="space-y-4 mb-10 flex-1">
-                                    {['Full System Access', 'High-Priority Queue', 'Commercial Rights', '4K Cinema Export', 'Priority Support'].map((feature, i) => (
+                                    {[t('pricing.feature1'), t('pricing.feature6'), t('pricing.feature3'), t('pricing.feature7'), t('pricing.feature8')].map((feature, i) => (
                                         <li key={i} className="flex items-center gap-3 text-sm font-medium text-neutral-400 group-hover:text-neutral-200 transition-colors">
                                             <CheckCircle2 size={16} className="text-neutral-600 group-hover:text-white transition-colors" /> {feature}
                                         </li>
@@ -474,34 +703,26 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                                     onClick={() => onPurchase('price_1SqCD0ChLIAUz0sE8Ylb8t0T')}
                                     className="w-full bg-transparent border border-white/10 text-white py-4 font-black text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all"
                                 >
-                                    Subscribe Pro
+                                    {t('pricing.subscribePro')}
                                 </button>
                             </div>
                         </FadeInWhenVisible>
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* --- FAQ Section --- */}
-            <section className="py-20 bg-[#050505] border-t border-white/5">
+            <section className="py-20 bg-[#080808] border-t border-white/5">
                 <div className="max-w-3xl mx-auto px-6">
                     <FadeInWhenVisible>
                         <div className="text-center mb-12">
                             <span className="text-[#C5A059] text-[10px] font-black uppercase tracking-[0.4em]">Support</span>
-                            <h2 className="text-2xl font-black uppercase tracking-tight text-white mt-2">Frequently Asked Questions</h2>
+                            <h2 className="text-2xl font-black uppercase tracking-tight text-white mt-2">{t('faq.title')}</h2>
                         </div>
                     </FadeInWhenVisible>
 
                     <div className="space-y-2">
-                        {[
-                            { q: "Can I use the videos for commercial purposes?", a: "Yes. All plans (Early Bird & Enterprise) include full commercial rights. You own 100% of the content you generate." },
-                            { q: "How does the AI Credit system work?", a: "Each tier receives a monthly allowance of tokens. These tokens are used for generating scripts, images, voiceovers, and rendering videos." },
-                            { q: "Can I cancel my subscription anytime?", a: "Absolutely. You can cancel directly from your dashboard at any time. Your access will continue until the end of your billing period." },
-                            { q: "Do the videos have watermarks?", a: "No. All exports from our paid plans are 100% watermark-free and professional grade." },
-                            { q: "What happens if I hit the limit?", a: "If you exceed your monthly limits, you can easily purchase top-up packs or upgrade your tier instantly from the dashboard." },
-                            { q: "How detailed are the analytics?", a: "Our Usage Analytics dashboard provides real-time tracking of token consumption, cost per project, and AI model performance (Gemini/Veo)." },
-                            { q: "Do you offer refunds?", a: "We stand by our product. If the system doesn't generate content as described, contact support within 7 days for a full refund." }
-                        ].map((item, i) => (
+                        {faqItems.map((item, i) => (
                             <FadeInWhenVisible key={i} delay={i * 50}>
                                 <div className="border border-white/5 bg-[#0A0A0A] rounded-sm overflow-hidden transition-all duration-300 hover:border-white/10">
                                     <button
@@ -526,25 +747,25 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
             </section>
 
             {/* --- Footer --- */}
-            < footer className="py-16 border-t border-white/5 bg-[#020202]" >
+            <footer className="py-16 border-t border-white/5 bg-[#020202]">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3">
                             <Shield size={24} className="text-[#C5A059]" />
                             <span className="text-lg font-black uppercase tracking-widest text-white">LazyAutoCreator</span>
                         </div>
-                        <p className="text-xs text-neutral-600 uppercase tracking-widest">Autonomous Content Generation System</p>
+                        <p className="text-xs text-neutral-600 uppercase tracking-widest">{t('footer.tagline')}</p>
                     </div>
                     <div className="flex items-center gap-8 text-xs font-bold text-neutral-500 uppercase tracking-widest">
-                        <button onClick={() => setShowLegal('privacy')} className="hover:text-[#C5A059] transition-colors">Privacy Database</button>
-                        <button onClick={() => setShowLegal('terms')} className="hover:text-[#C5A059] transition-colors">Terms of Use</button>
-                        <button onClick={() => setShowFeedback(true)} className="hover:text-[#C5A059] transition-colors">Contact Support</button>
+                        <button onClick={() => setShowLegal('privacy')} className="hover:text-[#C5A059] transition-colors">{t('footer.privacy')}</button>
+                        <button onClick={() => setShowLegal('terms')} className="hover:text-[#C5A059] transition-colors">{t('footer.terms')}</button>
+                        <button onClick={() => setShowFeedback(true)} className="hover:text-[#C5A059] transition-colors">{t('footer.contact')}</button>
                     </div>
                     <div className="text-xs text-neutral-700 font-mono">
                         VERSION 0 [BETA]
                     </div>
                 </div>
-            </footer >
+            </footer>
 
             {showLegal && (
                 <LegalModal
@@ -591,7 +812,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin, onPurchase, proCount
                     </div>
                 </div>
             )}
-        </div >
+        </div>
     );
 };
 

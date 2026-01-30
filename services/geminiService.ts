@@ -171,7 +171,7 @@ export const generateShortsScript = async (
     - If the topic is in THAI, the 'voiceover', 'title', and 'description' MUST be in THAI.
     - NEVER mix languages. If the user input is English, do not respond in Thai.
     
-    CRITICAL - VISUAL PROMPT RULES:
+    CRITICAL - VISUAL PROMPT RULES:s
     - The 'visual_prompt' field MUST be in ENGLISH ONLY.
     - NEVER include Thai text, Chinese text, or ANY non-Latin characters in visual_prompt.
     - NEVER ask the AI to render text/words/letters on the image.
