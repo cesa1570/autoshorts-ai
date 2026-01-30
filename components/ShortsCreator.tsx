@@ -18,6 +18,7 @@ import ExportSuccessModal from './ExportSuccessModal';
 import MobileHandoffModal from './MobileHandoffModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
 import PricingModal from './PricingModal';
+import CreatorInputBar from './CreatorInputBar';
 import { useApp } from '../contexts/AppContext';
 import { saveProject, listProjects, ProjectData, getProject, addToQueue, validateYoutubeMetadata } from '../services/projectService';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
@@ -26,7 +27,7 @@ import {
   Smartphone, Bot, CheckCircle2, Zap, Download, Type, Move, Palette, Layers, BarChart3, Clock, Eye, EyeOff, Music, PlusCircle, Trash2, ChevronRight, Info,
   Mic, VolumeX, Volume2, Play, Rocket, Upload, FileAudio, ToggleLeft, ToggleRight, Share2,
   Anchor, BookOpen, Lightbulb, TrendingUp, Megaphone, Send, ListPlus, ShieldCheck,
-  Paintbrush, Activity, Check, BrainCircuit, Camera, Calendar, AlertTriangle
+  Paintbrush, Activity, Check, BrainCircuit, Camera, Calendar, AlertTriangle, Globe
 } from 'lucide-react';
 
 const SaveStatusIndicator = ({ status }: { status: 'draft' | 'saving' | 'saved' | 'error' }) => {
@@ -631,170 +632,25 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
       {/* Control Surface */}
       {/* Control Surface */}
       <div className="flex-1 flex flex-col gap-6">
-        <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[3rem] shadow-2xl relative overflow-hidden ring-1 ring-white/5">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#C5A059] to-[#8a6d3b] rounded-2xl flex items-center justify-center text-black shadow-lg shadow-[#C5A059]/20">
-                <Sparkles size={24} strokeWidth={2} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Create Short</h2>
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
-                  <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">AI Video Generator</p>
-                </div>
-              </div>
+        {/* Empty placeholder - Input is now at the bottom */}
+        {!state.script && (
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#C5A059]/20 to-transparent border border-[#C5A059]/20 flex items-center justify-center mb-8">
+              <Sparkles size={40} className="text-[#C5A059]" />
             </div>
-            {(state.topic || state.script) && (
-              <button
-                onClick={() => setShowClearConfirmModal(true)}
-                className="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all active:scale-95"
-                title="Clear All Data"
-              >
-                <Trash2 size={18} />
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left: Input */}
-            <div className="lg:col-span-7 flex flex-col gap-4">
-              <div className="relative group flex-1">
-                <textarea
-                  placeholder="Describe your video topic..."
-                  className="w-full h-full min-h-[140px] bg-black/40 border border-white/10 rounded-3xl p-6 text-white text-lg font-kanit outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner placeholder:text-neutral-600 resize-none"
-                  value={state.topic}
-                  onChange={(e) => setState(prev => ({ ...prev, topic: e.target.value }))}
-                />
-                <div className="absolute bottom-4 right-4 text-[10px] font-bold text-neutral-700 uppercase tracking-widest pointer-events-none">
-                  Shorts Prompt
-                </div>
-              </div>
-              <button
-                onClick={() => setShowConfirmModal(true)}
-                disabled={state.status !== 'idle' || !state.topic}
-                className="w-full py-4 bg-[#C5A059] text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-[#d4af37] shadow-lg shadow-[#C5A059]/20 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95 flex items-center justify-center gap-3"
-              >
-                {state.status === 'generating_script' ? (
-                  <><Loader2 className="animate-spin" size={16} /> Generating Script...</>
-                ) : (
-                  <><Wand2 size={16} /> Generate Script</>
-                )}
-              </button>
-            </div>
-
-            {/* Right: Settings */}
-            <div className="lg:col-span-5 grid grid-cols-1 gap-3">
-
-              {/* Provider Selector - Only show if both or valid keys exist */}
-              {(hasGemini || hasOpenAI) && (
-                <div className="bg-black/40 p-1 rounded-xl flex gap-1 mb-6 relative z-20">
-                  {hasGemini && (
-                    <button
-                      onClick={() => setSelectedProvider('gemini')}
-                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'gemini'
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                        } `}
-                    >
-                      <Sparkles size={14} /> Gemini 2.0 Flash
-                    </button>
-                  )}
-                  {hasOpenAI && (
-                    <button
-                      onClick={() => setSelectedProvider('openai')}
-                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'openai'
-                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/50'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                        } `}
-                    >
-                      <Zap size={14} /> OpenAI GPT-4o
-                    </button>
-                  )}
-                  {hasVertex && (
-                    <button
-                      onClick={() => setSelectedProvider('vertex')}
-                      className={`flex-1 py-3 rounded-lg flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${selectedProvider === 'vertex'
-                        ? 'bg-[#C5A059] text-black shadow-lg shadow-[#C5A059]/50'
-                        : 'text-neutral-500 hover:text-neutral-300 hover:bg-white/5'
-                        } `}
-                    >
-                      <Sparkles size={14} /> Vertex AI
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Language */}
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Language</label>
-                <CustomDropdown
-                  value={language}
-                  onChange={(val) => setLanguage(val as any)}
-                  options={[{ value: 'Thai', label: 'Thai' }, { value: 'English', label: 'English' }]}
-                />
-              </div>
-
-              {/* Intelligence */}
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Script Engine</label>
-                <CustomDropdown
-                  value={selectedTextModel}
-                  onChange={(val) => setSelectedTextModel(val as string)}
-                  placeholder="Script Model"
-                  options={availableTextModels.map(m => ({ value: m.id, label: m.name, icon: <Bot size={14} className="text-emerald-500" /> }))}
-                />
-              </div>
-
-              {/* Visual Model */}
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Visual Engine</label>
-                <CustomDropdown
-                  value={selectedVisualModel}
-                  onChange={(val) => setSelectedVisualModel(val as string)}
-                  placeholder="Visual Engine"
-                  options={availableVisualModels.map(m => ({
-                    value: m.id,
-                    label: m.name,
-                    icon: m.type === 'live' ? <Zap size={14} className="text-yellow-400" /> : <Palette size={14} className="text-pink-400" />
-                  }))}
-                />
-              </div>
-
-              {/* Narrator */}
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Narrator</label>
-                <button
-                  onClick={() => setShowVoiceSelector(true)}
-                  className="w-full bg-black/40 border border-white/10 hover:border-[#C5A059] rounded-2xl px-5 py-3 flex items-center justify-between transition-all group active:scale-95"
-                >
-                  <div className="flex items-center gap-3">
-                    <Mic size={14} className="text-[#C5A059]" />
-                    <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover:text-[#C5A059] transition-colors">{selectedVoice}</span>
-                  </div>
-                  <ChevronRight size={14} className="text-neutral-600" />
-                </button>
-              </div>
-
-              {/* Style */}
-              <div className="space-y-1.5">
-                <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Visual Style</label>
-                <button
-                  onClick={() => setShowStyleSelector(true)}
-                  className="w-full bg-black/40 border border-white/10 hover:border-[#C5A059] rounded-2xl px-5 py-3 flex items-center justify-between transition-all group active:scale-95"
-                >
-                  <div className="flex items-center gap-3">
-                    <Palette size={14} className="text-[#C5A059]" />
-                    <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover:text-[#C5A059] transition-colors">{selectedStyle}</span>
-                  </div>
-                  <ChevronRight size={14} className="text-neutral-600" />
-                </button>
-              </div>
-
+            <h3 className="text-3xl font-black text-white uppercase tracking-tight mb-4">Shorts Engine</h3>
+            <p className="text-neutral-500 text-sm max-w-md mb-8">
+              พิมพ์หัวข้อวิดีโอที่คุณต้องการสร้างด้านล่าง แล้วกด Generate
+            </p>
+            <div className="flex items-center gap-4 text-[10px] font-bold text-neutral-600 uppercase tracking-widest">
+              <span className="flex items-center gap-2"><Globe size={12} /> {language}</span>
+              <span>•</span>
+              <span className="flex items-center gap-2"><Mic size={12} /> {selectedVoice}</span>
+              <span>•</span>
+              <span className="flex items-center gap-2"><Palette size={12} /> {selectedStyle}</span>
             </div>
           </div>
-        </div>
+        )}
 
         {state.script && (
           <div className="bg-[#0a0a0a] border border-white/5 rounded-[4rem] overflow-hidden shadow-2xl flex flex-col">
@@ -928,6 +784,26 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
           currentTier={licenseTier}
         />
       )}
+
+      {/* Gemini-style Bottom Input Bar */}
+      <CreatorInputBar
+        topic={state.topic}
+        onTopicChange={(topic) => setState(prev => ({ ...prev, topic }))}
+        onGenerate={() => setShowConfirmModal(true)}
+        isGenerating={state.status === 'generating_script'}
+        placeholder="อธิบายหัวข้อวิดีโอ Shorts ของคุณ..."
+        language={language}
+        onLanguageChange={setLanguage}
+        selectedProvider={selectedProvider}
+        onProviderChange={setSelectedProvider}
+        hasGemini={hasGemini}
+        hasOpenAI={hasOpenAI}
+        hasVertex={hasVertex}
+        selectedVoice={selectedVoice}
+        onVoiceClick={() => setShowVoiceSelector(true)}
+        selectedStyle={selectedStyle}
+        onStyleClick={() => setShowStyleSelector(true)}
+      />
     </div>
   );
 };
