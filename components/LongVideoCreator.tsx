@@ -19,13 +19,14 @@ import CustomDropdown from './CustomDropdown';
 import ExportSuccessModal from './ExportSuccessModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
 import PricingModal from './PricingModal';
+import CreatorInputBar from './CreatorInputBar';
 import { saveProject, listProjects, ProjectData, exportProjectToJson, deleteProject, addToQueue, validateYoutubeMetadata, getProject } from '../services/projectService';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
 import {
   Video as VideoIcon, Loader2, AlertCircle, Save, History,
   Sparkles, Download, Youtube, Palette, Layers, BarChart3,
   Type, Headphones, X, Upload, Trash2, MessageCircle, Mic,
-  CheckCircle2, Copy, FolderOpen, Clock, FileJson, Info, Book, Music, Play, Pause, Library, Layout, Settings, Eye, EyeOff, Rocket, VolumeX, Volume2, FileText, ChevronDown, ChevronUp, ListChecks, Tv, Activity, Send, ListPlus, ShieldCheck, Timer, Zap, Cpu, ChevronRight, Monitor, Settings2, Cloud, CloudOff, FileEdit, Wand2, FastForward, Plus, BrainCircuit, Calendar, Camera, Share2, Smartphone
+  CheckCircle2, Copy, FolderOpen, Clock, FileJson, Info, Book, Music, Play, Pause, Library, Layout, Settings, Eye, EyeOff, Rocket, VolumeX, Volume2, FileText, ChevronDown, ChevronUp, ListChecks, Tv, Activity, Send, ListPlus, ShieldCheck, Timer, Zap, Cpu, ChevronRight, Monitor, Settings2, Cloud, CloudOff, FileEdit, Wand2, FastForward, Plus, BrainCircuit, Calendar, Camera, Share2, Smartphone, Globe
 } from 'lucide-react';
 import MobileHandoffModal from './MobileHandoffModal';
 
@@ -633,125 +634,25 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
 
       <div className="flex flex-col xl:flex-row gap-8">
         <div className="flex-1 flex flex-col gap-6">
-          <div className="bg-[#0a0a0a] border border-white/5 p-8 rounded-[3rem] shadow-2xl relative overflow-hidden ring-1 ring-white/5">
-            {/* Provider Selector */}
-            {/* Provider Selector Removed - Gemini Enforced */}
-
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#C5A059] to-[#8a6d3b] rounded-2xl flex items-center justify-center text-black shadow-lg shadow-[#C5A059]/20">
-                  <Book size={24} strokeWidth={2} />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black text-white uppercase tracking-tight">Narrative Engine</h2>
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse" />
-                    <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">System Ready</p>
-                  </div>
-                </div>
+          {/* Empty placeholder - Input is now at the bottom */}
+          {!state.script && (
+            <div className="flex flex-col items-center justify-center py-32 text-center">
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#C5A059]/20 to-transparent border border-[#C5A059]/20 flex items-center justify-center mb-8">
+                <Book size={40} className="text-[#C5A059]" />
               </div>
-              {(state.topic || state.script) && (
-                <button
-                  onClick={() => setShowClearConfirmModal(true)}
-                  className="p-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl transition-all active:scale-95"
-                  title="Clear All Data"
-                >
-                  <Trash2 size={18} />
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Left Column: Input */}
-              <div className="lg:col-span-7 flex flex-col gap-4">
-                <div className="relative group flex-1">
-                  <textarea
-                    placeholder="Describe your documentary topic..."
-                    className="w-full h-full min-h-[140px] bg-black/40 border border-white/10 rounded-3xl p-6 text-white text-lg font-kanit outline-none focus:border-[#C5A059] focus:ring-1 focus:ring-[#C5A059] transition-all shadow-inner placeholder:text-neutral-700 resize-none"
-                    value={state.topic}
-                    onChange={(e) => setState(prev => ({ ...prev, topic: e.target.value }))}
-                  />
-                  <div className="absolute bottom-4 right-4 text-[10px] font-bold text-neutral-700 uppercase tracking-widest pointer-events-none">
-                    AI Prompt
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowConfirmModal(true)}
-                  disabled={isGenerating || !state.topic}
-                  className="w-full py-4 bg-[#C5A059] text-black rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-[#d4af37] shadow-lg shadow-[#C5A059]/20 transition-all disabled:opacity-50 disabled:shadow-none active:scale-95 flex items-center justify-center gap-3"
-                >
-                  {isGenerating ? <Loader2 className="animate-spin" /> : <><Sparkles size={16} /> Generate Script</>}
-                </button>
-              </div>
-
-              {/* Right Column: Settings */}
-              <div className="lg:col-span-5 grid grid-cols-1 gap-3 overflow-visible">
-
-                {/* Duration */}
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">TimeFrame</label>
-                  <CustomDropdown
-                    value={duration.toString()}
-                    onChange={(val) => setDuration(parseInt(val))}
-                    placeholder="Select Duration"
-                    options={[5, 10, 15, 20, 30].map(opt => ({ value: opt.toString(), label: `${opt} Minutes`, icon: <Clock size={14} className="text-white" /> }))}
-                  />
-                </div>
-
-                {/* AI Model */}
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Intelligence</label>
-                  <CustomDropdown
-                    value={selectedTextModel}
-                    onChange={setSelectedTextModel}
-                    options={availableTextModels.map(m => ({ value: m.id, label: m.name, icon: <BrainCircuit size={14} className="text-emerald-500" /> }))}
-                  />
-                </div>
-
-                {/* Art Style */}
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Visual DNA</label>
-                  <button
-                    onClick={() => setShowStyleSelector(true)}
-                    className="w-full bg-black/40 border border-white/10 hover:border-[#C5A059] rounded-2xl px-5 py-3 flex items-center justify-between transition-all group active:scale-95"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Palette size={14} className="text-[#C5A059]" />
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover:text-[#C5A059] transition-colors">{selectedStyle}</span>
-                    </div>
-                    <ChevronRight size={14} className="text-neutral-600" />
-                  </button>
-                </div>
-
-                {/* Visual Engine (Image/Video Model) */}
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Visual Engine</label>
-                  <CustomDropdown
-                    value={selectedVisualModel}
-                    onChange={(val) => setSelectedVisualModel(val)}
-                    options={availableVisualModels.map(m => ({ value: m.id, label: m.name, icon: <Sparkles size={14} /> }))}
-                  />
-                </div>
-
-                {/* Voice */}
-                <div className="space-y-1.5">
-                  <label className="text-[9px] font-black text-neutral-500 uppercase tracking-widest pl-2">Narrator</label>
-                  <button
-                    onClick={() => setShowVoiceSelector(true)}
-                    className="w-full bg-black/40 border border-white/10 hover:border-[#C5A059] rounded-2xl px-5 py-3 flex items-center justify-between transition-all group active:scale-95"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Mic size={14} className="text-[#C5A059]" />
-                      <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover:text-[#C5A059] transition-colors">{selectedVoice}</span>
-                    </div>
-                    <ChevronRight size={14} className="text-neutral-600" />
-                  </button>
-                </div>
-
+              <h3 className="text-3xl font-black text-white uppercase tracking-tight mb-4">Cinema Engine</h3>
+              <p className="text-neutral-500 text-sm max-w-md mb-8">
+                พิมพ์หัวข้อสารคดีหรือวิดีโอยาวที่คุณต้องการสร้างด้านล่าง แล้วกด Generate
+              </p>
+              <div className="flex items-center gap-4 text-[10px] font-bold text-neutral-600 uppercase tracking-widest">
+                <span className="flex items-center gap-2"><Clock size={12} /> {duration} นาที</span>
+                <span>•</span>
+                <span className="flex items-center gap-2"><Mic size={12} /> {selectedVoice}</span>
+                <span>•</span>
+                <span className="flex items-center gap-2"><Palette size={12} /> {selectedStyle}</span>
               </div>
             </div>
-          </div>
+          )}
 
           {state.script && (
             <div className="bg-[#0a0a0a] border border-white/5 rounded-[3.5rem] overflow-hidden shadow-2xl flex flex-col ring-1 ring-white/5">
@@ -948,6 +849,26 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
         onClose={() => setShowHandoffModal(false)}
         caption={state.script?.longDescription || state.script?.description}
         hashtags={state.script?.hashtags}
+      />
+
+      {/* Gemini-style Bottom Input Bar */}
+      <CreatorInputBar
+        topic={state.topic}
+        onTopicChange={(topic) => setState(prev => ({ ...prev, topic }))}
+        onGenerate={() => setShowConfirmModal(true)}
+        isGenerating={isGenerating}
+        placeholder="อธิบายหัวข้อสารคดีหรือวิดีโอยาว..."
+        language={language}
+        onLanguageChange={setLanguage}
+        selectedProvider={selectedProvider}
+        onProviderChange={setSelectedProvider}
+        hasGemini={hasGemini}
+        hasOpenAI={hasOpenAI}
+        hasVertex={hasVertex}
+        selectedVoice={selectedVoice}
+        onVoiceClick={() => setShowVoiceSelector(true)}
+        selectedStyle={selectedStyle}
+        onStyleClick={() => setShowStyleSelector(true)}
       />
     </div>
   );

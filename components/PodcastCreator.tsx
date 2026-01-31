@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Mic, Radio, Play, Sparkles, Loader2, Download, MessageCircle, User, Users, Image as ImageIcon, Zap, Share2, Smartphone, Trash2, Volume2 } from 'lucide-react';
+import { Mic, Radio, Play, Sparkles, Loader2, Download, MessageCircle, User, Users, Image as ImageIcon, Zap, Share2, Smartphone, Trash2, Volume2, Globe, Palette, Clock } from 'lucide-react';
 import MobileHandoffModal from './MobileHandoffModal';
 import { generatePodcastScript, generatePodcastImage, generateVoiceover } from '../services/geminiService';
 import { generateScriptWithOpenAI, generateAudioWithOpenAI } from '../services/openaiService';
@@ -15,6 +15,7 @@ import { Draft } from '../types';
 import ConfirmGenerationModal from './ConfirmGenerationModal';
 import UpgradeRequiredModal from './UpgradeRequiredModal';
 import PricingModal from './PricingModal';
+import CreatorInputBar from './CreatorInputBar';
 
 // Helper function to convert AudioBuffer to WAV Blob
 const audioBufferToWav = (buffer: AudioBuffer): Blob => {
@@ -796,6 +797,26 @@ const PodcastCreator: React.FC<PodcastCreatorProps> = ({ initialDraft, isActive 
                     currentTier={licenseTier}
                 />
             )}
+
+            {/* Gemini-style Bottom Input Bar */}
+            <CreatorInputBar
+                topic={topic}
+                onTopicChange={setTopic}
+                onGenerate={() => setShowConfirmModal(true)}
+                isGenerating={isGeneratingScript}
+                placeholder="อธิบายหัวข้อ Podcast ที่คุณต้องการ..."
+                language={language}
+                onLanguageChange={setLanguage}
+                selectedProvider={selectedProvider}
+                onProviderChange={setSelectedProvider}
+                hasGemini={hasGemini}
+                hasOpenAI={hasOpenAI}
+                hasVertex={hasVertex}
+                selectedVoice={guest1Voice}
+                onVoiceClick={() => setShowVoice1Selector(true)}
+                selectedStyle={podcastStyle}
+                onStyleClick={() => { }}
+            />
         </div>
     );
 };
