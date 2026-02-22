@@ -1,5 +1,6 @@
 
 import { TEXT_MODELS, VISUAL_MODELS, TTS_MODELS, AIModel, ModelPrice } from '../utils/models';
+import { proxyAiRequest, UsageLimitError, SubscriptionExpiredError } from './proxyService';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1';
 
@@ -12,7 +13,7 @@ const notifyUsage = (modelId: string, type: 'text' | 'image' | 'audio', usage: {
     else if (type === 'image') modelDef = VISUAL_MODELS.find(m => m.id === modelId);
     else if (type === 'audio') modelDef = TTS_MODELS.find(m => m.id === modelId);
 
-    if (!modelDef) return; // Unknown model
+    if (!modelDef) return;
 
     let cost = 0;
     const p = modelDef.pricing;
@@ -26,7 +27,7 @@ const notifyUsage = (modelId: string, type: 'text' | 'image' | 'audio', usage: {
         cost = (usage.characters || 0) * (p.input || 0);
     }
 
-    const totalTokens = (usage.prompt_tokens || 0) + (usage.completion_tokens || 0) + (usage.characters || 0); // usage proxy
+    const totalTokens = (usage.prompt_tokens || 0) + (usage.completion_tokens || 0) + (usage.characters || 0);
 
     window.dispatchEvent(new CustomEvent('gemini-api-usage', {
         detail: {
@@ -38,7 +39,7 @@ const notifyUsage = (modelId: string, type: 'text' | 'image' | 'audio', usage: {
     }));
 };
 
-let openaiApiKey: string = '';
+let openaiApiKey: string = typeof window !== 'undefined' ? localStorage.getItem('openai_api_key') || '' : '';
 
 export const setOpenAIApiKey = (key: string) => {
     openaiApiKey = key;
@@ -47,123 +48,85 @@ export const setOpenAIApiKey = (key: string) => {
     }
 };
 
-export const getOpenAIApiKey = () => {
-    if (openaiApiKey) return openaiApiKey;
-    if (typeof window !== 'undefined') {
-        return localStorage.getItem('openai_api_key') || '';
-    }
-    return '';
-};
-
-// Initialize from storage
-if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('openai_api_key');
-    if (stored) openaiApiKey = stored;
-}
-
-const getHeaders = () => {
-    if (!openaiApiKey) throw new Error("OpenAI API Key not set. Please add it in Settings.");
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`
-    };
-};
+export const getOpenAIApiKey = () => openaiApiKey;
 
 export const generateScriptWithOpenAI = async (prompt: string, model: string = 'gpt-4o'): Promise<string> => {
     try {
-        const response = await fetch(`${OPENAI_API_URL}/chat/completions`, {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify({
-                model: model,
-                messages: [
-                    { role: "system", content: "You are a creative scriptwriter for viral short videos." },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.7,
-            })
+        const data = await proxyAiRequest('generate_script', {
+            model,
+            prompt,
+            provider: 'openai'
         });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error?.message || 'OpenAI API Error');
-        }
+        notifyUsage(model, 'text', {
+            prompt_tokens: 500, // Estimate if proxy doesn't return
+            completion_tokens: 500
+        });
 
-        const data = await response.json();
-
-        // Notify Usage
-        if (data.usage) {
-            notifyUsage(model, 'text', {
-                prompt_tokens: data.usage.prompt_tokens,
-                completion_tokens: data.usage.completion_tokens
-            });
-        }
-
-        return data.choices[0].message.content;
+        return data.text || data;
     } catch (error: any) {
-        console.error("OpenAI Script Gen Failed:", error);
+        console.error("OpenAI Script Proxy Failed:", error);
         throw error;
     }
 };
 
 export const generateImageWithDalle = async (prompt: string, size: string = '1024x1792'): Promise<string | null> => {
     try {
-        const response = await fetch(`${OPENAI_API_URL}/images/generations`, {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify({
-                model: "dall-e-3",
-                prompt: prompt,
-                n: 1,
-                size: size, // DALL-E 3 supports 1024x1024, 1024x1792 (portrait), 1792x1024 (landscape)
-                response_format: "b64_json"
-            })
+        const data = await proxyAiRequest('generate_image', {
+            model: "dall-e-3",
+            prompt: prompt,
+            size: size,
+            provider: "openai"
         });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error?.message || 'DALL-E Generation Error');
-        }
-
-        const data = await response.json();
-
-        // Notify Usage (1 image)
         notifyUsage('dall-e-3', 'image', {});
 
-        return `data:image/png;base64,${data.data[0].b64_json}`;
+        return data.imageUrl;
     } catch (error: any) {
-        console.error("DALL-E Gen Failed:", error);
+        console.error("DALL-E Proxy Failed:", error);
         throw error;
     }
 };
 
 export const generateAudioWithOpenAI = async (text: string, voice: string = 'alloy'): Promise<string | null> => {
     try {
-        const response = await fetch(`${OPENAI_API_URL}/audio/speech`, {
-            method: 'POST',
-            headers: getHeaders(),
-            body: JSON.stringify({
-                model: "tts-1",
-                input: text,
-                voice: voice,
-            })
+        const data = await proxyAiRequest('generate_voiceover', {
+            text,
+            voice,
+            provider: "openai"
         });
 
         notifyUsage('tts-1', 'audio', { characters: text.length });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.error?.message || 'OpenAI TTS Error');
-        }
-
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
-            reader.readAsDataURL(blob);
-        });
+        return `data:audio/mpeg;base64,${data.audioBase64}`;
     } catch (error: any) {
-        console.error("OpenAI TTS Failed:", error);
+        console.error("OpenAI TTS Proxy Failed:", error);
+        throw error;
+    }
+};
+
+export const generateVideoWithSora = async (
+    prompt: string,
+    aspectRatio: '16:9' | '9:16' = '16:9',
+    model: string = 'sora-2',
+    style: string = 'Cinematic',
+    onProgress?: (pollCount: number) => void
+): Promise<string> => {
+    try {
+        // High-level Sora call to proxy: proxy handles polling!
+        const data = await proxyAiRequest('generate_video', {
+            prompt,
+            model,
+            aspectRatio,
+            style,
+            provider: 'openai'
+        });
+
+        notifyUsage(model, 'image', {}); // Per-unit tracking
+
+        return `data:${data.mimeType || 'video/mp4'};base64,${data.videoBase64}`;
+    } catch (error: any) {
+        console.error("Sora Proxy Failed:", error);
         throw error;
     }
 };

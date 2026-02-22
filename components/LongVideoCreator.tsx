@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { TEXT_MODELS, VISUAL_MODELS, VIDEO_MODELS } from '../utils/models';
 import { ProjectState, GeneratorMode, Scene, SubtitleStyle, ScriptData, Draft } from '../types';
 import { generateLongVideoScript, generateVideoForScene, generateImageForScene, generateVoiceover, ERR_INVALID_KEY, refineVisualPrompt, generateStoryboards, generateLiveImageForScene, regenerateScene } from '../services/geminiService';
-import { generateScriptWithOpenAI, generateImageWithDalle, generateAudioWithOpenAI } from '../services/openaiService';
+import { generateScriptWithOpenAI, generateImageWithDalle, generateAudioWithOpenAI, generateVideoWithSora } from '../services/openaiService';
 import { unifiedGenerateScript } from '../services/unifiedAiService';
 import { decodeAudioData } from '../utils/audioUtils';
 import { DraftService } from '../services/draftService';
@@ -365,11 +365,12 @@ const LongVideoCreator: React.FC<LongVideoCreatorProps> = ({ initialTopic, initi
       const audioBuffer = await decodeAudioData(audioBase64, audioCtx);
       updateScene(scene.id, { assetStage: 'visual', processingProgress: 35, audioBase64, audioBuffer, statusDetail: "Generating Visual..." });
       let activePrompt = scene.visual_prompt;
-      const isVideo = selectedVisualModel.startsWith('veo') || selectedVisualModel.startsWith('banana');
+      const isVideo = selectedVisualModel.startsWith('veo') || selectedVisualModel.startsWith('banana') || selectedVisualModel.startsWith('sora');
       const isLive = selectedVisualModel === 'live-images';
       let visualResult: string;
       if (isVideo) {
-        visualResult = await generateVideoForScene(activePrompt, aspectRatio, selectedVisualModel, selectedStyle, (polls) => {
+        const videoFn = selectedVisualModel.startsWith('sora') ? generateVideoWithSora : generateVideoForScene;
+        visualResult = await videoFn(activePrompt, aspectRatio, selectedVisualModel, selectedStyle, (polls) => {
           const p = Math.min(98, 35 + (polls * 4));
           updateScene(scene.id, { processingProgress: p, statusDetail: `Rendering...` });
         });

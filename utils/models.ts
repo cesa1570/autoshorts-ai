@@ -83,6 +83,20 @@ export const VIDEO_MODELS: AIModel[] = [
         provider: 'google',
         pricing: { unit: 'video', perUnit: 0 }
     },
+    {
+        id: 'sora-2',
+        name: 'Sora 2 (OpenAI)',
+        type: 'video',
+        provider: 'openai',
+        pricing: { unit: 'second', perUnit: 0.10 }
+    },
+    {
+        id: 'sora-2-pro',
+        name: 'Sora 2 Pro (OpenAI)',
+        type: 'video',
+        provider: 'openai',
+        pricing: { unit: 'second', perUnit: 0.40 }
+    },
 ];
 
 export const TTS_MODELS: AIModel[] = [

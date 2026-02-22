@@ -6,6 +6,7 @@ export interface UserProfile {
     full_name?: string;
     licenseTier: 'free' | 'pro' | 'enterprise';
     licenseExpiresAt: number | null;
+    monthlyRequests: number;
 }
 
 export const authManagementService = {
@@ -18,7 +19,8 @@ export const authManagementService = {
                     email: 'developer@cinema.studio',
                     full_name: 'Developer Mode',
                     licenseTier: 'enterprise',
-                    licenseExpiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000)
+                    licenseExpiresAt: Date.now() + (365 * 24 * 60 * 60 * 1000),
+                    monthlyRequests: 0
                 };
             }
 
@@ -42,7 +44,8 @@ export const authManagementService = {
                         email: user.email,
                         license_tier: 'free',
                         created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
+                        updated_at: new Date().toISOString(),
+                        monthly_requests: 0
                     })
                     .select()
                     .single();
@@ -56,7 +59,8 @@ export const authManagementService = {
                 email: user.email || '',
                 full_name: user.user_metadata?.full_name || '',
                 licenseTier: (profile?.license_tier?.toLowerCase() as any) || 'free',
-                licenseExpiresAt: profile?.license_expires_at ? new Date(profile.license_expires_at).getTime() : null
+                licenseExpiresAt: profile?.license_expires_at ? new Date(profile.license_expires_at).getTime() : null,
+                monthlyRequests: profile?.monthly_requests || 0
             };
         } catch (err) {
             console.error("Critical error in getProfile:", err);

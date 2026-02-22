@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { TEXT_MODELS, VISUAL_MODELS, VIDEO_MODELS } from '../utils/models';
 import { ProjectState, GeneratorMode, Scene, SubtitleStyle, ScriptData, Draft } from '../types';
 import { generateShortsScript, generateImageForScene, generateVoiceover, generateVideoForScene, ERR_INVALID_KEY, refineVisualPrompt, generateLiveImageForScene, regenerateScene, generateStoryboards } from '../services/geminiService';
-import { generateScriptWithOpenAI, generateImageWithDalle, generateAudioWithOpenAI } from '../services/openaiService';
+import { generateScriptWithOpenAI, generateImageWithDalle, generateAudioWithOpenAI, generateVideoWithSora } from '../services/openaiService';
 import { unifiedGenerateScript } from '../services/unifiedAiService';
 import { decodeAudioData } from '../utils/audioUtils';
 import { DraftService } from '../services/draftService';
@@ -326,11 +326,12 @@ const ShortsCreator: React.FC<ShortsCreatorProps> = ({ initialTopic, initialLang
       if (audioCtx.state === 'suspended') await audioCtx.resume();
       const audioBuffer = await decodeAudioData(audioBase64, audioCtx);
       updateScene(scene.id, { processingProgress: 30, audioBase64, audioBuffer, statusDetail: "Synthesizing Layers..." });
-      const isVideo = selectedVisualModel.startsWith('veo') || selectedVisualModel.startsWith('banana');
+      const isVideo = selectedVisualModel.startsWith('veo') || selectedVisualModel.startsWith('banana') || selectedVisualModel.startsWith('sora');
       const isLive = selectedVisualModel === 'live-images';
       let result: string;
       if (isVideo) {
-        result = await generateVideoForScene(scene.visual_prompt, aspectRatio, selectedVisualModel, selectedStyle, (p) => {
+        const videoFn = selectedVisualModel.startsWith('sora') ? generateVideoWithSora : generateVideoForScene;
+        result = await videoFn(scene.visual_prompt, aspectRatio, selectedVisualModel, selectedStyle, (p) => {
           updateScene(scene.id, { processingProgress: 30 + (p * 5), statusDetail: `Mastering Frames...` });
         });
       } else if (isLive) {

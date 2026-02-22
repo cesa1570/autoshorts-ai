@@ -312,6 +312,41 @@ const App: React.FC = () => {
     });
   };
 
+  const [monthlyRequestsState, setMonthlyRequestsState] = useState(0);
+  const [monthlyLimitState, setMonthlyLimitState] = useState(5); // Default free limit
+
+  // Fetch SaaS Usage and Profile Stats
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchUsage = async () => {
+      try {
+        const profile = await authManagementService.getProfile();
+        if (profile) {
+          setMonthlyRequestsState(profile.monthlyRequests || 0);
+
+          // Map tier to limit (Synchronized with ai-proxy)
+          const limits: Record<string, number> = {
+            'free': 5,
+            'enterprise': 500,
+            'pro': 99999
+          };
+          setMonthlyLimitState(limits[profile.licenseTier] || 5);
+          setLicenseTier(profile.licenseTier as any);
+          if (profile.licenseExpiresAt) {
+            setLicenseExpiresAt(profile.licenseExpiresAt);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch usage stats:', err);
+      }
+    };
+
+    fetchUsage();
+    const interval = setInterval(fetchUsage, 30000);
+    return () => clearInterval(interval);
+  }, [userId]);
+
   const contextValue: AppContextType = {
     apiKey,
     setApiKey: handleSetApiKey,
@@ -342,7 +377,12 @@ const App: React.FC = () => {
     vertexServiceKey,
     setVertexServiceKey: (key: string) => { setVertexServiceKey(key); localStorage.setItem('vertex_service_key', key); },
     vertexApiKey,
-    setVertexApiKey: (key: string) => { setVertexApiKey(key); localStorage.setItem('vertex_api_key', key); }
+    setVertexApiKey: (key: string) => { setVertexApiKey(key); localStorage.setItem('vertex_api_key', key); },
+    // SaaS Usage
+    monthlyRequests: monthlyRequestsState,
+    setMonthlyRequests: setMonthlyRequestsState,
+    monthlyLimit: monthlyLimitState,
+    setMonthlyLimit: setMonthlyLimitState
   };
 
   return (

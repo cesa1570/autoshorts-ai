@@ -65,3 +65,34 @@ BEGIN
         CREATE POLICY "Anyone can upload an avatar" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'avatars' );
     END IF;
 END $$;
+
+-- ============================================================
+-- 6. SaaS API Usage Tracking
+-- ============================================================
+
+-- Add monthly usage columns to profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS monthly_requests INTEGER DEFAULT 0;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS monthly_reset_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+
+-- API Usage Log Table
+CREATE TABLE IF NOT EXISTS public.api_usage (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  action TEXT NOT NULL,
+  model TEXT NOT NULL,
+  tokens_used INTEGER DEFAULT 0,
+  cost_usd NUMERIC(10,6) DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE public.api_usage ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view own usage') THEN
+        CREATE POLICY "Users can view own usage" ON public.api_usage FOR SELECT USING (auth.uid() = user_id);
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS idx_api_usage_user_id ON public.api_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_created_at ON public.api_usage(created_at);

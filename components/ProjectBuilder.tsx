@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ProjectState, GeneratorMode, Scene, SubtitleStyle } from '../types';
 import { generateScript, generateImageForScene, generateVoiceover, generateVideoForScene, ERR_INVALID_KEY } from '../services/geminiService';
+import { generateVideoWithSora } from '../services/openaiService';
 import { decodeAudioData } from '../utils/audioUtils';
 import VideoPlayer, { VideoPlayerRef } from './VideoPlayer';
 import SceneManager from './SceneManager';
@@ -49,9 +50,10 @@ const ProjectBuilder: React.FC<{ initialTopic?: string, initialLanguage?: 'Thai'
    const processScene = async (scene: Scene) => {
       updateScene(scene.id, { status: 'generating' });
       try {
-         const isVideo = selectedVisualModel.startsWith('veo');
+         const isVideo = selectedVisualModel.startsWith('veo') || selectedVisualModel.startsWith('sora');
+         const videoFn = selectedVisualModel.startsWith('sora') ? generateVideoWithSora : generateVideoForScene;
          const [visualResult, audioBase64] = await Promise.all([
-            isVideo ? generateVideoForScene(scene.visual_prompt, aspectRatio, selectedVisualModel, selectedStyle) : generateImageForScene(scene.visual_prompt, selectedVisualModel, aspectRatio, selectedStyle),
+            isVideo ? videoFn(scene.visual_prompt, aspectRatio, selectedVisualModel, selectedStyle) : generateImageForScene(scene.visual_prompt, selectedVisualModel, aspectRatio, selectedStyle),
             generateVoiceover(scene.voiceover, selectedVoice)
          ]);
          const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
@@ -115,7 +117,7 @@ const ProjectBuilder: React.FC<{ initialTopic?: string, initialLanguage?: 'Thai'
                      {[
                         { label: 'Category', value: mode, setter: (v: any) => setMode(v), options: Object.values(GeneratorMode).filter(m => m !== GeneratorMode.LONG_VIDEO) },
                         { label: 'Art Style', value: selectedStyle, setter: (v: any) => setSelectedStyle(v), options: ['Cinematic', 'Anime', 'Cyberpunk', 'Horror'] },
-                        { label: 'Engine', value: selectedVisualModel, setter: (v: any) => setSelectedVisualModel(v), options: ['gemini-2.5-flash-image', 'veo-3.1-fast-generate-preview'] },
+                        { label: 'Engine', value: selectedVisualModel, setter: (v: any) => setSelectedVisualModel(v), options: ['gemini-2.5-flash-image', 'veo-3.1-fast-generate-preview', 'sora-2', 'sora-2-pro'] },
                         { label: 'Voice', value: selectedVoice, setter: (v: any) => setSelectedVoice(v), options: ['Kore', 'Charon', 'Zephyr'] }
                      ].map((field, i) => (
                         <div key={i} className="bg-slate-950 p-4 rounded-2xl border border-slate-800">

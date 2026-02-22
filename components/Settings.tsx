@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Key, Save, Trash2, Shield, Eye, EyeOff, CheckCircle2, Info, Settings as SettingsIcon, Zap, Sparkles, Bot } from 'lucide-react';
+import { Key, Save, Trash2, Shield, Eye, EyeOff, CheckCircle2, Info, Settings as SettingsIcon, Zap, Sparkles, Bot, Activity } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 
 const Settings: React.FC = () => {
@@ -82,6 +82,45 @@ const Settings: React.FC = () => {
 
                 {/* SECTION 1: SECURITY & PRIVACY */}
                 <div className="space-y-8">
+                    {/* SaaS Usage Quota Card */}
+                    <div className="p-6 bg-gradient-to-br from-[#C5A059]/10 to-transparent border border-[#C5A059]/20 rounded-3xl mb-10 overflow-hidden relative group">
+                        <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                            <Activity size={100} className="text-[#C5A059]" />
+                        </div>
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h4 className="text-[#C5A059] text-[10px] font-black uppercase tracking-[0.4em] mb-1">Monthly Protocol Quota</h4>
+                                    <div className="text-2xl font-black text-white uppercase tracking-tighter">
+                                        {useApp().monthlyRequests} / {useApp().monthlyLimit === 99999 ? '∞' : useApp().monthlyLimit} Requests
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Tier Status</div>
+                                    <div className="px-3 py-1 bg-[#C5A059] text-black text-[9px] font-black rounded-full uppercase tracking-widest">
+                                        {useApp().licenseTier}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="space-y-3">
+                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                    <div
+                                        className="h-full bg-gradient-to-r from-[#C5A059] to-[#d4af37] shadow-[0_0_15px_rgba(197,160,89,0.3)] transition-all duration-1000"
+                                        style={{ width: `${Math.min(100, (useApp().monthlyRequests / useApp().monthlyLimit) * 100)}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between text-[8px] font-black uppercase tracking-[0.2em]">
+                                    <span className="text-neutral-500">System Usage</span>
+                                    <span className={useApp().monthlyRequests > useApp().monthlyLimit * 0.9 ? 'text-red-400' : 'text-[#C5A059]'}>
+                                        {Math.round((useApp().monthlyRequests / useApp().monthlyLimit) * 100)}% Consumed
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex items-center gap-3 text-[#C5A059] border-b border-white/5 pb-4">
                         <Shield size={20} />
                         <h3 className="text-lg font-black uppercase tracking-widest">Security & Privacy</h3>
@@ -91,34 +130,50 @@ const Settings: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         <div className="lg:col-span-1 space-y-2">
                             <div className="flex items-center gap-2 mb-1">
-                                <Sparkles className="text-blue-400" size={18} />
-                                <h4 className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-black text-lg tracking-tight">Google Gemini</h4>
+                                <Bot className="text-[#C5A059]" size={18} />
+                                <h4 className="text-white font-black text-lg tracking-tight uppercase tracking-widest">Provider Access</h4>
                             </div>
                             <p className="text-neutral-500 text-xs leading-relaxed">
-                                Primary engine for high-speed generation.
+                                Managed API keys for your subscription tier.
                             </p>
                         </div>
                         <div className="lg:col-span-2 space-y-6">
-                            <div className="relative group">
-                                <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex gap-2">
-                                    <div className="relative flex-1">
-                                        <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-[#C5A059] transition-colors" />
-                                        <input
-                                            type={showKey ? "text" : "password"}
-                                            value={inputValue}
-                                            onChange={(e) => setInputValue(e.target.value)}
-                                            placeholder="sk-..."
-                                            className="w-full bg-black/50 border border-white/10 rounded-2xl p-4 pl-12 pr-14 text-white font-mono text-sm outline-none focus:border-[#C5A059]/50 focus:bg-black transition-all placeholder:text-neutral-700"
-                                        />
-                                        <button type="button" onClick={() => setShowKey(!showKey)} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-white transition-colors">
-                                            {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                                        </button>
+                            {useApp().licenseTier !== 'free' ? (
+                                <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                        <CheckCircle2 size={24} />
                                     </div>
-                                    <button onClick={handleSave} disabled={!inputValue.trim()} className={`px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isSaved ? 'bg-emerald-600 text-white' : 'bg-[#C5A059] text-black hover:bg-[#dec07b]'}`}>
-                                        {isSaved ? <CheckCircle2 size={18} /> : <Save size={18} />} {isSaved ? 'Saved' : 'Save'}
-                                    </button>
-                                </form>
-                            </div>
+                                    <div>
+                                        <div className="text-white text-xs font-black uppercase tracking-widest mb-1">Managed AI Protocol Active</div>
+                                        <p className="text-neutral-500 text-[10px]">Your tier includes hosted API access. No individual keys required.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="relative group">
+                                    <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <Key size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-neutral-600 group-focus-within:text-[#C5A059] transition-colors" />
+                                            <input
+                                                type={showKey ? "text" : "password"}
+                                                value={inputValue}
+                                                onChange={(e) => setInputValue(e.target.value)}
+                                                placeholder="Enter Gemini API Key (Required for Free Tier)"
+                                                className="w-full bg-black/50 border border-white/10 rounded-2xl p-4 pl-12 pr-14 text-white font-mono text-sm outline-none focus:border-[#C5A059]/50 focus:bg-black transition-all placeholder:text-neutral-700"
+                                            />
+                                            <button type="button" onClick={() => setShowKey(!showKey)} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 hover:text-white transition-colors">
+                                                {showKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                        <button onClick={handleSave} disabled={!inputValue.trim()} className={`px-6 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${isSaved ? 'bg-emerald-600 text-white' : 'bg-[#C5A059] text-black hover:bg-[#dec07b]'}`}>
+                                            {isSaved ? <CheckCircle2 size={18} /> : <Save size={18} />} {isSaved ? 'Saved' : 'Save'}
+                                        </button>
+                                    </form>
+                                    <p className="mt-3 text-[9px] text-neutral-600 font-bold uppercase tracking-widest flex items-center gap-2">
+                                        <Info size={12} />
+                                        Free tier users must provide their own Gemini API key.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

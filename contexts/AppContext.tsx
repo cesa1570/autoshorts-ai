@@ -39,6 +39,12 @@ export interface AppContextType {
   setVertexServiceKey: (key: string) => void;
   vertexApiKey: string;
   setVertexApiKey: (key: string) => void;
+
+  // SaaS Usage Support
+  monthlyRequests: number;
+  setMonthlyRequests: (count: number) => void;
+  monthlyLimit: number;
+  setMonthlyLimit: (limit: number) => void;
 }
 
 export interface UsageRecord {

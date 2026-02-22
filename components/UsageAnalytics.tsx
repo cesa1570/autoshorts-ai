@@ -17,6 +17,8 @@ const MODEL_DISPLAY_NAMES: Record<string, string> = {
     'gpt-4o': 'GPT-4o (OpenAI)',
     'gpt-4o-mini': 'GPT-4o Mini (OpenAI)',
     'dall-e-3': 'DALL-E 3 (OpenAI)',
+    'sora-2': 'Sora 2 Video (OpenAI)',
+    'sora-2-pro': 'Sora 2 Pro Video (OpenAI)',
     'unknown': 'Unknown Model',
 };
 
